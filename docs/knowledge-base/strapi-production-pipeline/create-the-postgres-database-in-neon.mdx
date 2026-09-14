@@ -1,0 +1,79 @@
+---
+title: "Create the Postgres Database in Neon"
+sidebar_label: "Create the Postgres Database in Neon"
+root_name: "KnowledgeBase"
+child_name: "Strapi Production Pipeline"
+---
+
+import Admonition from '@theme/Admonition';
+
+# 🐘 Create the Postgres Database in Neon
+
+Neon gives you a fully managed, serverless Postgres database in minutes — no servers to provision, no infrastructure to babysit. Follow the steps below to get your database up and running for our application.
+
+:::tip[Why Neon?]
+Serverless scaling, instant branching, and a generous free tier make Neon a great fit for modern apps. ⚡
+:::
+
+---
+
+## Step 1 — Create Your Project
+
+1. Head over to **[neon.com](https://neon.com/)**.
+2. **Sign up** for a free account (GitHub, Google, or email).
+3. Create a new **Organization** — this will hold all your team's projects.
+4. Click **New Project** and give it a name (e.g. `my-app-db`).
+
+:::info[Info]
+Each Neon project comes with a default database and a ready-to-use connection branch, so you can start querying immediately after creation.
+:::
+
+---
+
+## Step 2 — Get Your Connection String
+
+Once your project is created:
+
+1. Go to the **Connect** button on your project dashboard.
+2. Copy the connection string — it will look like this:
+
+```txt
+<Database client>://<Username>:<Password>@<Host>/<Database name>
+```
+
+**Example:**
+
+```txt
+postgresql://neondb_owner:****************@ep-autumn-river-ax68f9tr-pooler.c-4.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require
+```
+
+<Admonition type="warning" title="Keep it secret! 🔒">
+Your connection string contains your database password. **Never commit it to version control.** Store it in a `.env` file and add that file to `.gitignore`.
+</Admonition>
+
+---
+
+## Step 3 — Use It in Your App
+
+Add the connection string to your environment variables:
+
+```bash title=".env"
+DATABASE_URL="postgresql://neondb_owner:****************@ep-autumn-river-ax68f9tr-pooler.c-4.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
+```
+
+Your application can now read `DATABASE_URL` to connect to Postgres. ✅
+
+---
+
+
+## ✅ Quick Recap
+
+| Step | Action |
+|------|--------|
+| 1 | Sign up on Neon → create organization → create project |
+| 2 | Copy the connection string from the **Connect** panel |
+| 3 | Store it securely in your `.env` file |
+
+:::note[Note]
+That's it — your Postgres database is live and ready to power your application! 🚀
+:::

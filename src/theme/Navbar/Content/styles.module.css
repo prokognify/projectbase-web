@@ -1,0 +1,113 @@
+/*
+Hide color mode toggle in small viewports
+ */
+@media (max-width: 996px) {
+  .colorModeToggle {
+    display: none;
+  }
+}
+
+/*
+Restore some Infima style that broke with CSS Cascade Layers
+See https://github.com/facebook/docusaurus/pull/11142
+ */
+:global(.navbar__items--right) > :last-child {
+  padding-right: 0;
+}
+.navigationViewport {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: 100%;
+}
+
+.navigationLayer {
+  display: flex;
+  align-items: center;
+
+  /* Space between navbar items */
+  gap: 0.5rem;
+
+  white-space: nowrap;
+
+  transition:
+          opacity 220ms ease,
+          transform 220ms ease;
+
+  will-change:
+          opacity,
+          transform;
+}
+
+/*
+ * Give every navbar link some horizontal breathing room.
+ */
+.navigationLayer :global(.navbar__link) {
+  padding: 0.5rem 0.65rem;
+  border-radius: 6px;
+}
+
+/*
+ * Active item
+ */
+.navigationLayer :global(.navbar__link--active) {
+  font-weight: 600;
+}
+
+.navigationLayerVisible {
+  opacity: 1;
+  transform: translateX(0);
+  pointer-events: auto;
+}
+
+.navigationLayerHidden {
+  position: absolute;
+  left: 0;
+
+  opacity: 0;
+  transform: translateX(-16px);
+  pointer-events: none;
+}
+
+.collectionNavigationLayer {
+  gap: 0.5rem;
+}
+
+.collectionSwitcherButton,
+.closeButton {
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+
+  padding: 0.5rem 0.65rem;
+  border-radius: 6px;
+}
+
+.collectionSwitcherButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+
+  margin-left: 0.5rem;
+}
+
+.closeButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+
+  margin-left: 0.5rem;
+}
+
+.menuIcon {
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+@media screen and (max-width: 996px) {
+  .navigationViewport {
+    display: none;
+  }
+}
+

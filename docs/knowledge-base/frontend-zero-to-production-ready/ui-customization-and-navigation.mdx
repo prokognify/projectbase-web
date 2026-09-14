@@ -1,0 +1,896 @@
+---
+title: "UI Customization & Navigation"
+sidebar_label: "UI Customization & Navigation"
+root_name: "KnowledgeBase"
+child_name: "Frontend: Zero to Production-Ready"
+---
+
+# 🎨 UI Customization & Deployment
+
+This module walks you through customizing your Docusaurus UI end-to-end — from **ejecting core components** (swizzling) to **responsive styling**, a **theme-aware logo**, and finally **running the site**. By the end, you'll have full control over the Navbar, Breadcrumbs, and overall look and feel across light/dark themes.
+
+:::tip[What you'll do in this guide]
+- 🧭 Understand the **Collection / Section / Content** architecture
+- 🧩 Swizzle & customize the **Navbar**
+- 🍞 Swizzle & customize **Breadcrumbs**
+- 📐 Apply **responsive sidebar** styling
+- 🌗 Configure a **theme-aware logo**
+- 🚀 Run the project
+  :::
+
+---
+
+## 🗺️ Step 0 — Understand the Architecture First
+
+Before touching any code, it helps to understand the **three-level content architecture** these components render. This is the model the Navbar and Breadcrumbs are built around.
+
+### The Collection / Section / Content model
+
+```
+Collections
+   │
+   ├── Collection A
+   ├── Collection B
+   └── Collection C
+         │
+         ▼
+      Sections
+         │
+   ┌─────┼─────┐
+   ▼     ▼     ▼
+Section Section Section
+         │
+         ▼
+      Contents
+         │
+   ┌─────┼─────┐
+   ▼     ▼     ▼
+Content Content Content
+```
+
+| Level          | Surfaced By                     |
+|----------------|----------------------------------|
+| **Collection** | Collection Switcher (`☰`)        |
+| **Section**    | Top Navbar (tabs)                |
+| **Content**    | Sidebar                          |
+
+### Example: navigating inside a Collection
+
+While inside **Collection A**, the navbar renders its **Sections** as tabs, and the sidebar shows the **Contents** that belong to whichever Section is active:
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│ Intro* │ Fundamental │ JavaScript │ Advanced   ☰ Collections │
+└─────────────────────────────────────────────────────────────┘
+```
+
+```
+┌─────────────────┐
+│ Core             │
+│ Setup            │
+│ IDE              │
+│ Configuration    │
+└─────────────────┘
+```
+
+So the active selection path looks like:
+
+```
+Collection A
+   ↓
+Fundamental   ← Section (top navbar)
+   ↓
+Setup         ← Content (sidebar)
+```
+
+### Opening the Collection Switcher
+
+Clicking **☰ Collections** swaps the Section tabs for a list of all Collections. This is **UI-only** — it doesn't change any application state until a new Collection is actually clicked:
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│ Collection A* │ Collection B │ Collection C │ Collection D  ✕│
+└─────────────────────────────────────────────────────────────┘
+```
+
+Selecting a different Collection **does** change context — the Section and Content levels are re-derived from the newly selected Collection.
+
+:::info[Quick recap]
+- **Collection** — top level, switched via `☰`. Switching resets the Section/Content context.
+- **Section** — rendered as navbar tabs; selecting one determines the sidebar's Contents.
+- **Content** — leaf-level, rendered in the sidebar, scoped to the active Section.
+- Opening the switcher is purely visual — state only changes once a new Collection is selected.
+  :::
+
+With the mental model in place, let's start building.
+
+---
+
+## 🧩 Step 1 — Swizzle & Customize the Navbar
+
+Eject the core `Navbar/Content` component so you can fully control layout, styling, and switcher behavior.
+
+### 1a. Eject the component
+
+```bash
+npm run swizzle @docusaurus/theme-classic Navbar/Content -- --eject
+```
+
+<details>
+<summary>📋 Example terminal output</summary>
+
+```
+√ Which language do you want to use? » JavaScript
+[WARNING]
+Swizzle action eject is unsafe to perform on Navbar/Content.
+It is more likely to be affected by breaking changes in the future.
+If you want to swizzle it, use the `--danger` flag, or confirm that you understand the risks.
+
+√ Do you really want to swizzle this unsafe internal component? » YES: I know what I am doing!
+[SUCCESS]
+Ejected Navbar/Content from @docusaurus/theme-classic to
+- src/theme/Navbar/Content/index.js
+- src/theme/Navbar/Content/styles.module.css
+```
+</details>
+
+:::warning[Unsafe swizzle]
+`Navbar/Content` is an internal component, so Docusaurus may introduce breaking changes to it in future releases. Pin your Docusaurus version or re-check this file after upgrades.
+:::
+
+### 1b. Replace `src/theme/Navbar/Content/index.js`
+
+```jsx
+import React, {useMemo, useState} from 'react';
+import Link from '@docusaurus/Link';
+import {useLocation} from '@docusaurus/router';
+import {useThemeConfig} from '@docusaurus/theme-common';
+
+import NavbarMobileSidebarToggle from '@theme/Navbar/MobileSidebar/Toggle';
+import NavbarLogo from '@theme/Navbar/Logo';
+import NavbarColorModeToggle from '@theme/Navbar/ColorModeToggle';
+
+import navigationData from '@site/data/navigation.json';
+import navigationConfig from '@site/data/navigation-config.json';
+
+import SearchBar from '@theme/SearchBar';
+
+import styles from './styles.module.css';
+
+// ---------------------------------------------------------------------------
+// URL helpers
+// ---------------------------------------------------------------------------
+
+function getCurrentRoot(pathname) {
+    const parts = pathname.split('/').filter(Boolean);
+    if (parts[0] !== 'docs' || !parts[1]) {
+        return null;
+    }
+    return parts[1];
+}
+
+function getCurrentChild(pathname) {
+    const parts = pathname.split('/').filter(Boolean);
+    if (parts[0] !== 'docs' || !parts[1] || !parts[2]) {
+        return null;
+    }
+    return parts[2];
+}
+
+// ---------------------------------------------------------------------------
+// Component
+// ---------------------------------------------------------------------------
+
+export default function NavbarContent() {
+    const location = useLocation();
+    const themeConfig = useThemeConfig();
+
+    const [collectionSwitcherOpen, setCollectionSwitcherOpen] = useState(false);
+
+    const currentRootSlug = useMemo(
+        () => getCurrentRoot(location.pathname),
+        [location.pathname],
+    );
+
+    const currentChildSlug = useMemo(
+        () => getCurrentChild(location.pathname),
+        [location.pathname],
+    );
+
+    const currentRoot = navigationData.find(
+        (root) => root.slug === currentRootSlug,
+    );
+
+    const isRootPage = Boolean(currentRoot);
+    const showingRoots = !isRootPage || collectionSwitcherOpen;
+
+    // Dynamically access the hierarchy
+    const children = currentRoot?.[navigationConfig.children] ?? [];
+
+    return (
+        <>
+            <NavbarMobileSidebarToggle />
+            <NavbarLogo />
+
+            <div className="navbar__items navbar__items--left">
+                <div className={styles.navigationViewport}>
+
+                    {/* CHILD NAVIGATION */}
+                    <div
+                        className={[
+                            styles.navigationLayer,
+                            showingRoots ? styles.navigationLayerHidden : styles.navigationLayerVisible,
+                        ].join(' ')}
+                    >
+                        {children.map((child) => {
+                            const nodes = child[navigationConfig.node] ?? [];
+                            const firstNode = nodes[0];
+                            if (!firstNode) return null;
+
+                            const isActive = child.slug === currentChildSlug;
+
+                            return (
+                                <Link
+                                    key={child.slug}
+                                    to={firstNode.path}
+                                    className={['navbar__link', isActive ? 'navbar__link--active' : ''].join(' ')}
+                                >
+                                    {child.name}
+                                </Link>
+                            );
+                        })}
+
+                        {isRootPage && (
+                            <button
+                                type="button"
+                                className={['navbar__link', styles.collectionSwitcherButton].join(' ')}
+                                onClick={() => setCollectionSwitcherOpen(true)}
+                                aria-label="Open Project Switcher"
+                                aria-expanded={collectionSwitcherOpen}
+                            >
+                                <span className={styles.menuIcon}>☰</span>
+                                <span>Projects</span>
+                            </button>
+                        )}
+                    </div>
+
+                    {/* ROOT NAVIGATION */}
+                    <div
+                        className={[
+                            styles.navigationLayer,
+                            styles.collectionNavigationLayer,
+                            showingRoots ? styles.navigationLayerVisible : styles.navigationLayerHidden,
+                        ].join(' ')}
+                    >
+                        {navigationData.map((root) => {
+                            const children = root[navigationConfig.children] ?? [];
+                            const firstChild = children[0];
+                            const nodes = firstChild?.[navigationConfig.node] ?? [];
+                            const firstNode = nodes[0];
+                            if (!firstNode) return null;
+
+                            const isCurrent = root.slug === currentRootSlug;
+
+                            return (
+                                <Link
+                                    key={root.slug}
+                                    to={firstNode.path}
+                                    className={['navbar__link', isCurrent ? 'navbar__link--active' : ''].join(' ')}
+                                    onClick={() => setCollectionSwitcherOpen(false)}
+                                >
+                                    {root.name}
+                                </Link>
+                            );
+                        })}
+
+                        {isRootPage && (
+                            <button
+                                type="button"
+                                className={['navbar__link', styles.closeButton].join(' ')}
+                                onClick={() => setCollectionSwitcherOpen(false)}
+                            >
+                                <span>✕</span>
+                                <span>Close</span>
+                            </button>
+                        )}
+                    </div>
+
+                </div>
+            </div>
+
+            {/* RIGHT SIDE */}
+            <div className="navbar__items navbar__items--right">
+                <SearchBar />
+
+                {themeConfig.navbar.items
+                    ?.filter((item) => item.position === 'right')
+                    .map((item, index) => {
+                        if (item.type === 'search') return null;
+
+                        if (item.type === 'html') {
+                            return (
+                                <div key={index} dangerouslySetInnerHTML={{__html: item.value ?? ''}} />
+                            );
+                        }
+
+                        if (item.href) {
+                            return (
+                                <a
+                                    key={index}
+                                    href={item.href}
+                                    className="navbar__link"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                >
+                                    {item.label}
+                                </a>
+                            );
+                        }
+
+                        return null;
+                    })}
+
+                <NavbarColorModeToggle />
+            </div>
+        </>
+    );
+}
+```
+
+### 1c. Replace `src/theme/Navbar/Content/styles.module.css`
+
+```css
+/* Hide color mode toggle in small viewports */
+@media (max-width: 996px) {
+  .colorModeToggle {
+    display: none;
+  }
+}
+
+/* Restore Infima style broken by CSS Cascade Layers — see docusaurus/pull/11142 */
+:global(.navbar__items--right) > :last-child {
+  padding-right: 0;
+}
+
+.navigationViewport {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: 100%;
+}
+
+.navigationLayer {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  white-space: nowrap;
+  transition: opacity 220ms ease, transform 220ms ease;
+  will-change: opacity, transform;
+}
+
+.navigationLayer :global(.navbar__link) {
+  padding: 0.5rem 0.65rem;
+  border-radius: 6px;
+}
+
+.navigationLayer :global(.navbar__link--active) {
+  font-weight: 600;
+}
+
+.navigationLayerVisible {
+  opacity: 1;
+  transform: translateX(0);
+  pointer-events: auto;
+}
+
+.navigationLayerHidden {
+  position: absolute;
+  left: 0;
+  opacity: 0;
+  transform: translateX(-16px);
+  pointer-events: none;
+}
+
+.collectionNavigationLayer {
+  gap: 0.5rem;
+}
+
+.collectionSwitcherButton,
+.closeButton {
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  padding: 0.5rem 0.65rem;
+  border-radius: 6px;
+}
+
+.collectionSwitcherButton,
+.closeButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-left: 0.5rem;
+}
+
+.menuIcon {
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+@media screen and (max-width: 996px) {
+  .navigationViewport {
+    display: none;
+  }
+}
+```
+
+✅ **Navbar swizzling complete** — Sections now render as tabs, with a Collection Switcher accessible via `☰`.
+
+---
+
+## 🍞 Step 2 — Swizzle & Customize Breadcrumbs
+
+Eject `DocBreadcrumbs` to render your own Collection → Section → Content trail.
+
+### 2a. Eject the component
+
+```bash
+npm run swizzle @docusaurus/theme-classic DocBreadcrumbs -- --eject --danger
+```
+
+<details>
+<summary>📋 Example terminal output</summary>
+
+```
+√ Which language do you want to use? » JavaScript
+[SUCCESS]
+Ejected DocBreadcrumbs from @docusaurus/theme-classic to
+- src/theme/DocBreadcrumbs/index.js
+- src/theme/DocBreadcrumbs/styles.module.css
+- src/theme/DocBreadcrumbs/StructuredData/index.js
+- src/theme/DocBreadcrumbs/Items/Home/index.js
+- src/theme/DocBreadcrumbs/Items/Home/styles.module.css
+```
+</details>
+
+### 2b. Replace `src/theme/DocBreadcrumbs/index.js`
+
+```jsx
+import React from 'react';
+import Link from '@docusaurus/Link';
+import {useLocation} from '@docusaurus/router';
+
+import navigationData from '@site/data/navigation.json';
+import navigationConfig from '@site/data/navigation-config.json';
+
+import styles from './styles.module.css';
+
+// ---------------------------------------------------------------------------
+// Find navigation data from current URL
+// ---------------------------------------------------------------------------
+
+function findBreadcrumbData(pathname) {
+  const parts = pathname.split('/').filter(Boolean);
+
+  if (parts[0] !== 'docs' || !parts[1] || !parts[2] || !parts[3]) {
+    return null;
+  }
+
+  const rootSlug = parts[1];
+  const childSlug = parts[2];
+  const nodeSlug = parts[3];
+
+  // ROOT
+  const root = navigationData.find((item) => item.slug === rootSlug);
+  if (!root) return null;
+
+  // CHILD
+  const children = root[navigationConfig.children] ?? [];
+  const child = children.find((item) => item.slug === childSlug);
+  if (!child) return null;
+
+  // NODE
+  const nodes = child[navigationConfig.node] ?? [];
+  const node = nodes.find((item) => item.slug === nodeSlug);
+  if (!node) return null;
+
+  return {root, child, node};
+}
+
+// ---------------------------------------------------------------------------
+// First node helpers
+// ---------------------------------------------------------------------------
+
+function getRootFirstNode(root) {
+  const children = root[navigationConfig.children] ?? [];
+  const firstChild = children[0];
+  if (!firstChild) return null;
+
+  const nodes = firstChild[navigationConfig.node] ?? [];
+  return nodes[0] ?? null;
+}
+
+function getChildFirstNode(child) {
+  const nodes = child[navigationConfig.node] ?? [];
+  return nodes[0] ?? null;
+}
+
+// ---------------------------------------------------------------------------
+// Component
+// ---------------------------------------------------------------------------
+
+export default function DocBreadcrumbs() {
+  const location = useLocation();
+  const data = findBreadcrumbData(location.pathname);
+
+  if (!data) return null;
+
+  const {root, child, node} = data;
+  const rootFirstNode = getRootFirstNode(root);
+  const childFirstNode = getChildFirstNode(child);
+
+  return (
+    <nav className={styles.breadcrumbs} aria-label="Breadcrumb">
+
+      {/* ROOT */}
+      {rootFirstNode ? (
+        <Link to={rootFirstNode.path} className={styles.breadcrumbLink}>
+          {root.name}
+        </Link>
+      ) : (
+        <span className={styles.currentBreadcrumb}>{root.name}</span>
+      )}
+
+      <span className={styles.separator} aria-hidden="true">›</span>
+
+      {/* CHILD */}
+      {childFirstNode ? (
+        <Link to={childFirstNode.path} className={styles.breadcrumbLink}>
+          {child.name}
+        </Link>
+      ) : (
+        <span className={styles.currentBreadcrumb}>{child.name}</span>
+      )}
+
+      <span className={styles.separator} aria-hidden="true">›</span>
+
+      {/* NODE */}
+      <span className={styles.currentBreadcrumb} aria-current="page">
+        {node.title}
+      </span>
+
+    </nav>
+  );
+}
+```
+
+### 2c. Replace `src/theme/DocBreadcrumbs/styles.module.css`
+
+```css
+.breadcrumbs {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-bottom: 1.25rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--ifm-color-emphasis-600);
+}
+
+.breadcrumbLink {
+  color: var(--ifm-color-emphasis-700);
+  font-weight: 500;
+  text-decoration: none;
+  transition: color 0.15s ease, background-color 0.15s ease;
+  padding: 0.2rem 0.35rem;
+  border-radius: 0.35rem;
+}
+
+.breadcrumbLink:hover {
+  color: var(--ifm-color-primary);
+  background-color: var(--ifm-color-emphasis-100);
+  text-decoration: none;
+}
+
+.separator {
+  color: var(--ifm-color-emphasis-400);
+  user-select: none;
+  margin: 0 0.1rem;
+}
+
+.currentBreadcrumb {
+  color: var(--ifm-color-emphasis-900);
+  font-weight: 600;
+  padding: 0.2rem 0.35rem;
+}
+```
+
+✅ **Breadcrumbs swizzling complete** — the trail now reads Collection › Section › Content.
+
+---
+
+## 📐 Step 3 — Apply Responsive Sidebar Styling
+
+Add responsive sidebar width rules to `src/css/custom.css` so the layout adapts cleanly from mobile to ultra-wide monitors.
+
+```css
+/* ===============================
+   Responsive Sidebar Width
+   =============================== */
+
+/* Default / small screens */
+:root {
+  --doc-sidebar-width: 220px;
+}
+
+/* Small → Medium */
+@media (min-width: 768px) {
+  :root {
+    --doc-sidebar-width: 200px;
+  }
+  .theme-doc-sidebar-container {
+    --doc-sidebar-width: 200px !important;
+  }
+}
+
+/* Medium → Large */
+@media (min-width: 1200px) {
+  :root {
+    --doc-sidebar-width: 220px;
+  }
+  .theme-doc-sidebar-container {
+    --doc-sidebar-width: 220px !important;
+  }
+}
+
+/* Large / Wide monitors */
+@media (min-width: 1600px) {
+  :root {
+    --doc-sidebar-width: 350px;
+  }
+  .theme-doc-sidebar-container {
+    --doc-sidebar-width: 350px !important;
+  }
+}
+
+/* Allow the documentation container to use available width */
+@media (min-width: 997px) {
+  .container {
+    max-width: 100%;
+  }
+}
+```
+
+:::note[Why this matters]
+Without these breakpoints, the sidebar stays a fixed width regardless of screen size — cramped on ultra-wide monitors, too wide on tablets. This scales it proportionally.
+:::
+
+---
+
+## 🌗 Step 4 — Theme-Aware Navbar Logo
+
+Make the navbar logo automatically swap between light/dark variants based on the active color mode.
+
+1. 🗑️ Delete the default `logo.svg`
+2. ➕ Add two new logos to `/static/img/`:
+    - `logo-light.svg`
+    - `logo-dark.svg`
+3. 🎨 Add the following to `src/css/custom.css`:
+
+```css
+/* =========================
+   Navbar Logo
+   ========================= */
+
+/* Light mode */
+.navbar__logo img {
+  content: url('/img/logo-light.svg');
+}
+
+/* Dark mode */
+[data-theme='dark'] .navbar__logo img {
+  content: url('/img/logo-dark.svg');
+}
+```
+
+---
+
+## 🧵 Putting It All Together
+
+### Full `src/css/custom.css`
+
+```css
+:root {
+  --ifm-color-primary: #2e8555;
+  --ifm-color-primary-dark: #29784c;
+  --ifm-color-primary-darker: #277148;
+  --ifm-color-primary-darkest: #205d3b;
+  --ifm-color-primary-light: #33925d;
+  --ifm-color-primary-lighter: #359962;
+  --ifm-color-primary-lightest: #3cad6e;
+  --ifm-code-font-size: 95%;
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
+}
+
+[data-theme='dark'] {
+  --ifm-color-primary: #25c2a0;
+  --ifm-color-primary-dark: #21af90;
+  --ifm-color-primary-darker: #1fa588;
+  --ifm-color-primary-darkest: #1a8870;
+  --ifm-color-primary-light: #29d5b0;
+  --ifm-color-primary-lighter: #32d8b4;
+  --ifm-color-primary-lightest: #4fddbf;
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
+}
+
+/* ===============================
+   Responsive Sidebar Width
+   =============================== */
+
+:root {
+  --doc-sidebar-width: 220px;
+}
+
+@media (min-width: 768px) {
+  :root {
+    --doc-sidebar-width: 200px;
+  }
+  .theme-doc-sidebar-container {
+    --doc-sidebar-width: 200px !important;
+  }
+}
+
+@media (min-width: 1200px) {
+  :root {
+    --doc-sidebar-width: 220px;
+  }
+  .theme-doc-sidebar-container {
+    --doc-sidebar-width: 220px !important;
+  }
+}
+
+@media (min-width: 1600px) {
+  :root {
+    --doc-sidebar-width: 350px;
+  }
+  .theme-doc-sidebar-container {
+    --doc-sidebar-width: 350px !important;
+  }
+}
+
+@media (min-width: 997px) {
+  .container {
+    max-width: 100%;
+  }
+}
+
+/* =========================================
+   Soft Admonition Theme
+   ========================================= */
+
+.alert {
+  border-width: 1px;
+  box-shadow: none;
+}
+
+:root {
+  --ifm-color-info-contrast-background: #f5f9fc;
+  --ifm-color-success-contrast-background: #f5faf7;
+  --ifm-color-warning-contrast-background: #fffbf3;
+  --ifm-color-danger-contrast-background: #fdf6f6;
+}
+
+[data-theme='dark'] {
+  --ifm-color-info-contrast-background: #182229;
+  --ifm-color-success-contrast-background: #19251f;
+  --ifm-color-warning-contrast-background: #28241b;
+  --ifm-color-danger-contrast-background: #281c1c;
+}
+
+/* =========================
+   Navbar Logo
+   ========================= */
+
+.navbar__logo img {
+  content: url('/img/logo-light.svg');
+}
+
+[data-theme='dark'] .navbar__logo img {
+  content: url('/img/logo-dark.svg');
+}
+```
+
+### Full `docusaurus.config.js`
+
+```js
+import {themes as prismThemes} from 'prism-react-renderer';
+
+const config = {
+  title: 'KnowledgeBase Web',
+  tagline: 'Knowledge will be organized',
+  favicon: 'img/favicon.ico',
+
+  future: {
+    v4: true,
+  },
+
+  url: 'https://knowledgebase-web.vercel.app',
+  baseUrl: '/',
+
+  i18n: {
+    defaultLocale: 'en',
+    locales: ['en'],
+  },
+
+  presets: [
+    [
+      'classic',
+      ({
+        docs: {
+          sidebarPath: './sidebars.js',
+          editUrl: 'https://github.com/devarifur007/knowledgebase-web',
+        },
+        theme: {
+          customCss: './src/css/custom.css',
+        },
+      }),
+    ],
+  ],
+
+  themeConfig: {
+    colorMode: {
+      respectPrefersColorScheme: true,
+    },
+
+    navbar: {
+      logo: {
+        alt: 'KnowledgeBase',
+        src: 'img/logo-light.svg',
+      },
+      items: [],
+    },
+
+    prism: {
+      theme: prismThemes.github,
+      darkTheme: prismThemes.dracula,
+    },
+  },
+};
+
+export default config;
+```
+
+---
+
+## 🚀 Step 5 — Run the Project
+
+```bash
+npm run start
+```
+
+<details>
+<summary>📋 Example terminal output</summary>
+
+```
+npm notice run npm run generate:mdx && npm run generate:navigation && docusaurus start
+→ Fetching content tree from http://localhost:1337 ...
+  ✓ docs\project007\intro\welcome-to-react.mdx
+  ✓ docs\project007\intro\python.mdx
+
+✅ Done. Wrote 2 MDX file(s) to docs/
+
+→ Fetching content tree from http://localhost:1337 ...
+→ Fetched 1 collection(s) from Strapi.
+✔ navigation.json generated: 1 collection(s), 1 section(s), 2 content(s)
+✔ Written to: data\navigation.json
+
+[INFO] Starting the development server...
+[SUCCESS] Docusaurus website is running at: http://localhost:3000/
+```
+</details>
+
+:::tip[You're done! 🎉]
+Your site now has a fully custom Navbar and Breadcrumbs following the **Collection / Section / Content** architecture, responsive sidebar sizing, and a theme-aware logo. Visit `http://localhost:3000/` to see it live.
+:::

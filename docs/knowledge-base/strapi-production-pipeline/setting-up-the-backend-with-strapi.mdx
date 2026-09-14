@@ -1,0 +1,223 @@
+---
+title: "Setting Up the Backend with Strapi"
+sidebar_label: "Setting Up the Backend with Strapi"
+root_name: "KnowledgeBase"
+child_name: "Strapi Production Pipeline"
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+# 🚀 Setting Up the Backend with Strapi
+
+This guide walks you through creating the **KnowledgeBase** application's backend using **Strapi v5**, connected to a **PostgreSQL** database hosted on **Neon**, and pushing it to GitHub.
+
+:::info[What you'll end up with]
+A running Strapi admin panel at `http://localhost:1337/admin`, backed by Postgres, version-controlled in a GitHub repo.
+:::
+
+By the end of this guide you will have:
+
+- ✅ A fresh Strapi 5 project connected to Postgres (Neon)
+- ✅ A working local dev server with an admin account
+- ✅ Code pushed to a GitHub repository
+
+---
+
+## Step 1 — Install Strapi
+
+Scaffold a new Strapi project using the official CLI:
+
+```bash
+npx create-strapi@latest knowledgebase-core
+```
+
+The installer will ask a series of setup questions. Answer them as shown below:
+
+| Prompt | Answer |
+|---|---|
+| Log in or sign up? | **Skip** |
+| Use default database (SQLite)? | **No** |
+| Choose database client | **postgres** |
+| Database name | `neondb` |
+| Host | *your Neon host* |
+| Port | `5432` |
+| Username | *your Neon username* |
+| Password | *your Neon password* |
+| Enable SSL connection? | **Yes** |
+| Start with example structure & data? | **No** |
+| Start with TypeScript? | **No** |
+| Install dependencies with npm? | **Yes** |
+| Initialize a git repository? | **Yes** |
+
+:::tip[Using Neon (or any managed Postgres)]
+Grab your host, database name, username, and password from your Neon project dashboard **before** running the command — you'll need to paste them in during setup.
+:::
+
+<details>
+<summary>📋 Full installation log (click to expand)</summary>
+
+```text
+ Strapi   v5.52.2 🚀 Let's create your new project
+
+ Strapi   Creating a new application at knowledgebase-core
+
+   deps   Installing dependencies with npm
+added 1456 packages, and audited 1457 packages in 3m
+
+       ✓  Dependencies installed
+
+    git   Initializing git repository.
+       ✓  Initialized a git repository.
+
+ Strapi   Your application was created!
+
+          To get started run
+          cd knowledgebase-core
+          npm run develop
+```
+
+</details>
+
+:::warning[Deprecation & audit warnings]
+You'll likely see npm deprecation warnings and audit vulnerability notices during install — these are expected on a fresh Strapi 5 project and don't block setup. Revisit `npm audit` later if you want to harden dependencies.
+:::
+
+---
+
+## Step 2 — Configure SSL for the Database
+
+Neon (and most managed Postgres providers) requires SSL, but Strapi's default SSL validation can fail against pooled connections in local dev.
+
+Open the generated **`.env`** file and add:
+
+```bash title=".env"
+DATABASE_SSL_REJECT_UNAUTHORIZED=false
+```
+
+:::danger[Development only]
+Disabling SSL certificate rejection is fine for **local development**, but for production you should use properly validated SSL certificates instead of bypassing verification.
+:::
+
+---
+
+## Step 3 — Start the Application
+
+Launch Strapi in watch mode:
+
+```bash
+npm run develop
+```
+
+Strapi will boot up, run its internal migrations (this can take a few minutes on first run), and generate TypeScript types.
+
+<details>
+<summary>📋 Startup log — what a healthy first run looks like</summary>
+
+```text
+[internal migration]: migrating 5.0.0-rename-identifiers-longer-than-max-length
+[internal migration]: migrated 5.0.0-rename-identifiers-longer-than-max-length
+...
+[discard-drafts] Migration completed successfully
+
+√ Building build context
+√ Creating admin
+√ Loading Strapi
+√ Generating types
+
+ Project information
+ Environment      development
+ Version          5.52.2 (node v22.23.1)
+ Database         postgres
+ Database name    neondb
+
+One more thing...
+Create your first administrator 💻 by going to the administration panel at:
+
+  http://localhost:1337/admin
+
+Strapi started successfully
+```
+
+</details>
+
+:::note[A brief connection hiccup is normal]
+You may see a one-off `Connection terminated unexpectedly` error the first time the admin panel queries the database (often right when you register the first admin). Neon's pooled connections can drop an idle connection during a cold start — Strapi automatically reconnects and the next request succeeds. No action needed unless it persists.
+:::
+
+---
+
+## Step 4 — Create Your Super Admin Account
+
+Once the server is running, Strapi automatically opens the registration screen:
+
+```
+http://localhost:1337/admin
+```
+
+Fill in the form to create your **super admin** account.
+
+:::tip[Where does this account live?]
+Your new admin user is stored in the `admin_users` table of your Postgres database.
+:::
+
+:::warning[Keep credentials out of your docs]
+Never commit real emails, passwords, or database credentials into your documentation or repo. Use a `.env` file (already git-ignored by Strapi) and a password manager instead.
+:::
+
+---
+
+## Step 5 — Push the Code to GitHub
+
+<Tabs>
+<TabItem value="init" label="1. Check & stage changes" default>
+
+```bash
+git status
+git add .
+```
+
+</TabItem>
+<TabItem value="commit" label="2. Commit">
+
+```bash
+git commit -m "KnowledgeBase Backend/Core installed successfully"
+```
+
+</TabItem>
+<TabItem value="remote" label="3. Connect to GitHub">
+
+```bash
+git remote add origin git@github.com:<your-username>/knowledgebase-core.git
+git branch -M main
+```
+
+</TabItem>
+<TabItem value="push" label="4. Push">
+
+```bash
+git push -u origin main
+```
+
+</TabItem>
+</Tabs>
+
+:::info[CRLF warnings are harmless]
+On Windows, you may see `warning: LF will be replaced by CRLF` for the generated `types/generated/*.d.ts` files — this is just Git's line-ending normalization and is safe to ignore.
+:::
+
+---
+
+## ✅ Recap
+
+| Step | Outcome |
+|---|---|
+| 1 | Strapi 5 project scaffolded with Postgres (Neon) |
+| 2 | SSL configured for local dev in `.env` |
+| 3 | Dev server running at `localhost:1337` |
+| 4 | Super admin account created |
+| 5 | Codebase pushed to GitHub (`main` branch) |
+
+:::tip[What's next?]
+Continue to the next guide to start building out **content types** for the KnowledgeBase.
+:::

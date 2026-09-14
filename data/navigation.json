@@ -1,0 +1,77 @@
+[
+  {
+    "name": "KnowledgeBase",
+    "slug": "knowledge-base",
+    "sortOrder": 1,
+    "modules": [
+      {
+        "name": "Strapi Production Pipeline",
+        "slug": "strapi-production-pipeline",
+        "sortOrder": 1,
+        "tasks": [
+          {
+            "title": "Create the Postgres Database in Neon",
+            "slug": "create-the-postgres-database-in-neon",
+            "sortOrder": 1,
+            "path": "/docs/knowledge-base/strapi-production-pipeline/create-the-postgres-database-in-neon"
+          },
+          {
+            "title": "Setting Up the Backend with Strapi",
+            "slug": "setting-up-the-backend-with-strapi",
+            "sortOrder": 2,
+            "path": "/docs/knowledge-base/strapi-production-pipeline/setting-up-the-backend-with-strapi"
+          },
+          {
+            "title": "Generalized Content Data Model",
+            "slug": "generalized-content-data-model",
+            "sortOrder": 3,
+            "path": "/docs/knowledge-base/strapi-production-pipeline/generalized-content-data-model"
+          },
+          {
+            "title": "Deploying the Backend to Render",
+            "slug": "deploying-the-backend-to-render",
+            "sortOrder": 4,
+            "path": "/docs/knowledge-base/strapi-production-pipeline/deploying-the-backend-to-render"
+          },
+          {
+            "title": "Creating a Health-Check Endpoint in Strapi",
+            "slug": "creating-a-health-check-endpoint-in-strapi",
+            "sortOrder": 5,
+            "path": "/docs/knowledge-base/strapi-production-pipeline/creating-a-health-check-endpoint-in-strapi"
+          },
+          {
+            "title": "Content Manager Walkthrough",
+            "slug": "content-manager-walkthrough",
+            "sortOrder": 6,
+            "path": "/docs/knowledge-base/strapi-production-pipeline/content-manager-walkthrough"
+          }
+        ]
+      },
+      {
+        "name": "Frontend: Zero to Production-Ready",
+        "slug": "frontend-zero-to-production-ready",
+        "sortOrder": 2,
+        "tasks": [
+          {
+            "title": "Setting Up the Docusaurus Website",
+            "slug": "setting-up-the-docusaurus-website",
+            "sortOrder": 1,
+            "path": "/docs/knowledge-base/frontend-zero-to-production-ready/setting-up-the-docusaurus-website"
+          },
+          {
+            "title": "UI Customization & Navigation",
+            "slug": "ui-customization-and-navigation",
+            "sortOrder": 2,
+            "path": "/docs/knowledge-base/frontend-zero-to-production-ready/ui-customization-and-navigation"
+          },
+          {
+            "title": "Production & Deployment",
+            "slug": "production-and-deployment-automation",
+            "sortOrder": 3,
+            "path": "/docs/knowledge-base/frontend-zero-to-production-ready/production-and-deployment-automation"
+          }
+        ]
+      }
+    ]
+  }
+]

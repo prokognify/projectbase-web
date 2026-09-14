@@ -1,0 +1,392 @@
+/**
+ * Custom CSS — Claude-inspired dark mode palette
+ * Docusaurus / Infima overrides
+ */
+
+/* ─── Google Fonts ─────────────────────────────────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+
+/* ─── Root (light mode) ─────────────────────────────────────────────────────── */
+:root {
+  --doc-sidebar-width: 260px;
+
+  /* Typography */
+  --ifm-font-family-base: 'Inter', system-ui, -apple-system, sans-serif;
+  --ifm-font-family-monospace: 'JetBrains Mono', 'Fira Code', monospace;
+  --ifm-font-size-base: 16px;
+  --ifm-line-height-base: 1.75;
+  --ifm-heading-font-weight: 500;
+
+  /* Primary accent — light mode: muted terracotta */
+  --ifm-color-primary: #B05C42;
+  --ifm-color-primary-dark: #9C5039;
+  --ifm-color-primary-darker: #8F4A34;
+  --ifm-color-primary-darkest: #6B3324;
+  --ifm-color-primary-light: #C46B50;
+  --ifm-color-primary-lighter: #CC785C;
+  --ifm-color-primary-lightest: #D98A70;
+
+  /* Code */
+  --ifm-code-font-size: 0.95rem;
+  --ifm-code-border-radius: 6px;
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.08);
+}
+
+/* ─── Dark mode ─────────────────────────────────────────────────────────────── */
+[data-theme='dark'] {
+
+  /* Backgrounds — warm near-black, layered depth */
+  --ifm-background-color: #0D0D0D;
+  --ifm-background-surface-color: #1A1A1A;
+  --ifm-navbar-background-color: #141414;
+  --ifm-footer-background-color: #0D0D0D;
+  --ifm-toc-border-color: #2A2A2A;
+  --ifm-hr-border-color: #2A2A2A;
+  --ifm-table-border-color: #2A2A2A;
+  --ifm-color-emphasis-200: #1A1A1A;
+  --ifm-color-emphasis-300: #2A2A2A;
+  --ifm-color-emphasis-400: #333333;
+  --ifm-color-emphasis-600: #6B6B6B;
+  --ifm-color-emphasis-700: #A8A8A8;
+  --ifm-color-emphasis-800: #ECECEC;
+
+  /* Text */
+  --ifm-color-content: #ECECEC;
+  --ifm-color-content-secondary: #A8A8A8;
+  --ifm-heading-color: #ECECEC;
+  --ifm-link-color: #CC785C;
+  --ifm-link-hover-color: #E8967A;
+
+  /* Primary accent — Claude's warm terracotta */
+  --ifm-color-primary: #CC785C;
+  --ifm-color-primary-dark: #B8674D;
+  --ifm-color-primary-darker: #A85A42;
+  --ifm-color-primary-darkest: #7A3B24;
+  --ifm-color-primary-light: #D98A70;
+  --ifm-color-primary-lighter: #E8967A;
+  --ifm-color-primary-lightest: #F5C4B3;
+
+  /* Sidebar */
+  --ifm-menu-color: #A8A8A8;
+  --ifm-menu-color-active: #ECECEC;
+  --ifm-menu-color-background-active: #2A2A2A;
+  --ifm-menu-color-background-hover: #1E1E1E;
+
+  /* Code */
+  --ifm-code-background: #1A1A1A;
+  --prism-background-color: #161616;
+  --docusaurus-highlighted-code-line-bg: rgba(204, 120, 92, 0.1);
+
+  /* Alerts / admonitions */
+  --ifm-alert-background-color-highlight: rgba(204, 120, 92, 0.07);
+
+  /* Scrollbar */
+  scrollbar-color: #333 #0D0D0D;
+}
+
+/* ─── Navbar ────────────────────────────────────────────────────────────────── */
+[data-theme='dark'] .navbar {
+  border-bottom: 0.5px solid #2A2A2A;
+  box-shadow: none;
+}
+
+[data-theme='dark'] .navbar__brand {
+  color: #ECECEC;
+}
+
+[data-theme='dark'] .navbar__link {
+  color: #A8A8A8;
+}
+
+[data-theme='dark'] .navbar__link:hover,
+[data-theme='dark'] .navbar__link--active {
+  color: #ECECEC;
+}
+
+/* ─── Sidebar ───────────────────────────────────────────────────────────────── */
+[data-theme='dark'] .menu {
+  background-color: #141414;
+}
+
+[data-theme='dark'] .menu__link {
+  color: #A8A8A8;
+  border-radius: 6px;
+  transition: background 0.15s, color 0.15s;
+}
+
+[data-theme='dark'] .menu__link:hover {
+  background: #1E1E1E;
+  color: #ECECEC;
+}
+
+[data-theme='dark'] .menu__link--active {
+  background: #2A2A2A;
+  color: #ECECEC;
+  border-left: 2px solid #CC785C;
+  border-radius: 0 6px 6px 0;
+  padding-left: calc(var(--ifm-menu-link-padding-horizontal) - 2px);
+}
+
+[data-theme='dark'] .menu__caret::before,
+[data-theme='dark'] .menu__link--sublist-caret::after {
+  filter: invert(60%);
+}
+
+/* ─── Markdown content ──────────────────────────────────────────────────────── */
+.markdown {
+  max-width: 760px;
+}
+
+[data-theme='dark'] .markdown h1,
+[data-theme='dark'] .markdown h2,
+[data-theme='dark'] .markdown h3,
+[data-theme='dark'] .markdown h4 {
+  color: #ECECEC;
+  font-weight: 500;
+}
+
+[data-theme='dark'] .markdown a {
+  color: #CC785C;
+  text-decoration: none;
+}
+
+[data-theme='dark'] .markdown a:hover {
+  color: #E8967A;
+  text-decoration: underline;
+}
+
+[data-theme='dark'] .markdown hr {
+  border-color: #2A2A2A;
+}
+
+[data-theme='dark'] .markdown blockquote {
+  border-left: 3px solid #CC785C;
+  background: #1A1A1A;
+  color: #A8A8A8;
+  border-radius: 0 8px 8px 0;
+}
+
+/* ─── Inline code ───────────────────────────────────────────────────────────── */
+code {
+  font-size: 0.95rem;
+}
+
+[data-theme='dark'] code {
+  background: #1A1A1A;
+  border: 0.5px solid #2A2A2A;
+  color: #CC785C;
+  padding: 0.15em 0.45em;
+}
+
+/* ─── Code blocks ───────────────────────────────────────────────────────────── */
+.theme-code-block {
+  border-radius: 14px;
+}
+
+[data-theme='dark'] .theme-code-block {
+  border: 0.5px solid #2A2A2A;
+  border-radius: 14px;
+  background: #161616;
+}
+
+[data-theme='dark'] .prism-code {
+  background: #161616 !important;
+}
+
+[data-theme='dark'] .theme-code-block-shiki-theme-light,
+[data-theme='dark'] pre[class*='language-'] {
+  background: #161616 !important;
+}
+
+/* Code block title bar */
+[data-theme='dark'] .codeBlockTitle_node_modules-\@docusaurus-theme-classic-lib-theme-CodeBlock-Content-styles-module,
+[data-theme='dark'] [class*='codeBlockTitle'] {
+  background: #1A1A1A;
+  border-bottom: 0.5px solid #2A2A2A;
+  color: #A8A8A8;
+}
+
+/* Copy button */
+[data-theme='dark'] button[class*='copyButton'] {
+  color: #6B6B6B;
+}
+
+[data-theme='dark'] button[class*='copyButton']:hover {
+  color: #A8A8A8;
+  background: #2A2A2A;
+}
+
+/* ─── Table of contents ─────────────────────────────────────────────────────── */
+[data-theme='dark'] .table-of-contents {
+  border-left: 1px solid #2A2A2A;
+}
+
+[data-theme='dark'] .table-of-contents__link {
+  color: #6B6B6B;
+  transition: color 0.15s;
+}
+
+[data-theme='dark'] .table-of-contents__link:hover,
+[data-theme='dark'] .table-of-contents__link--active {
+  color: #CC785C;
+}
+
+/* ─── Admonitions ───────────────────────────────────────────────────────────── */
+[data-theme='dark'] .admonition {
+  background: #1A1A1A;
+  border: 0.5px solid #2A2A2A;
+  border-radius: 10px;
+}
+
+[data-theme='dark'] .admonition-heading {
+  font-weight: 500;
+}
+
+[data-theme='dark'] .admonition.admonition-note {
+  border-left: 3px solid #CC785C;
+}
+
+[data-theme='dark'] .admonition.admonition-tip {
+  border-left: 3px solid #1D9E75;
+}
+
+[data-theme='dark'] .admonition.admonition-info {
+  border-left: 3px solid #378ADD;
+}
+
+[data-theme='dark'] .admonition.admonition-warning {
+  border-left: 3px solid #BA7517;
+}
+
+[data-theme='dark'] .admonition.admonition-danger {
+  border-left: 3px solid #E24B4A;
+}
+
+/* ─── Tables ────────────────────────────────────────────────────────────────── */
+[data-theme='dark'] table {
+  border-color: #2A2A2A;
+}
+
+[data-theme='dark'] table thead tr {
+  background: #1A1A1A;
+  border-bottom: 1px solid #333;
+}
+
+[data-theme='dark'] table thead th {
+  color: #ECECEC;
+  font-weight: 500;
+}
+
+[data-theme='dark'] table tbody tr:nth-child(even) {
+  background: #141414;
+}
+
+[data-theme='dark'] table tbody tr:hover {
+  background: #1E1E1E;
+}
+
+[data-theme='dark'] table td,
+[data-theme='dark'] table th {
+  border-color: #2A2A2A;
+  color: #A8A8A8;
+}
+
+/* ─── Pagination ────────────────────────────────────────────────────────────── */
+[data-theme='dark'] .pagination-nav__link {
+  background: #1A1A1A;
+  border: 0.5px solid #2A2A2A;
+  border-radius: 10px;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+[data-theme='dark'] .pagination-nav__link:hover {
+  background: #222;
+  border-color: #CC785C;
+}
+
+[data-theme='dark'] .pagination-nav__label {
+  color: #ECECEC;
+}
+
+[data-theme='dark'] .pagination-nav__sublabel {
+  color: #6B6B6B;
+}
+
+/* ─── Search ────────────────────────────────────────────────────────────────── */
+[data-theme='dark'] .DocSearch-Button {
+  background: #1A1A1A;
+  border: 0.5px solid #2A2A2A;
+  color: #6B6B6B;
+  border-radius: 8px;
+}
+
+[data-theme='dark'] .DocSearch-Button:hover {
+  background: #222;
+  border-color: #333;
+  box-shadow: none;
+}
+
+[data-theme='dark'] .DocSearch-Modal {
+  background: #141414;
+  border: 0.5px solid #2A2A2A;
+}
+
+/* ─── Footer ────────────────────────────────────────────────────────────────── */
+[data-theme='dark'] .footer {
+  background: #0D0D0D;
+  border-top: 0.5px solid #2A2A2A;
+}
+
+[data-theme='dark'] .footer__link-item {
+  color: #6B6B6B;
+}
+
+[data-theme='dark'] .footer__link-item:hover {
+  color: #A8A8A8;
+}
+
+[data-theme='dark'] .footer__copyright {
+  color: #6B6B6B;
+}
+
+/* ─── Scrollbar (webkit) ────────────────────────────────────────────────────── */
+[data-theme='dark'] ::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+[data-theme='dark'] ::-webkit-scrollbar-track {
+  background: #0D0D0D;
+}
+
+[data-theme='dark'] ::-webkit-scrollbar-thumb {
+  background: #2A2A2A;
+  border-radius: 3px;
+}
+
+[data-theme='dark'] ::-webkit-scrollbar-thumb:hover {
+  background: #333;
+}
+
+/* ─── Breadcrumbs ───────────────────────────────────────────────────────────── */
+[data-theme='dark'] .breadcrumbs__link {
+  color: #6B6B6B;
+}
+
+[data-theme='dark'] .breadcrumbs__link:hover {
+  background: #1E1E1E;
+  color: #A8A8A8;
+}
+
+[data-theme='dark'] .breadcrumbs__item--active .breadcrumbs__link {
+  color: #A8A8A8;
+  background: none;
+}
+
+/* ─── Version badge / tags ──────────────────────────────────────────────────── */
+[data-theme='dark'] .badge {
+  background: #2D1F1A;
+  border: 0.5px solid #7A3B24;
+  color: #CC785C;
+  font-weight: 500;
+}

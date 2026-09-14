@@ -1,0 +1,143 @@
+---
+title: "Generalized Content Data Model"
+sidebar_label: "Generalized Content Data Model"
+root_name: "KnowledgeBase"
+child_name: "Strapi Production Pipeline"
+---
+
+import Admonition from '@theme/Admonition';
+
+Every piece of documentation in this system lives inside a simple, three-level hierarchy. Understand this once, and the rest of the CMS setup falls into place. 🧩
+
+:::info[What you'll learn]
+By the end of this guide you'll understand the **data model**, know **why each field exists**, and be able to **recreate the structure** in Strapi's Content-Type Builder.
+:::
+
+## 1. The Big Picture
+
+At its core, the business logic is just a three-level tree:
+
+```
+Collection (1)
+   │
+   └──< Section (N)
+          │
+          └──< Content (N)
+```
+
+| Content Type | Field       | Relationship  | Business Meaning                  |
+| ------------ | ----------- | ------------- | ---------------------------------- |
+| Collection   | `sections`  | One-to-Many   | A Collection has many Sections     |
+| Section      | `collection`| Many-to-One   | A Section belongs to one Collection|
+| Section      | `documents` | One-to-Many   | A Section has many Documents       |
+| Content      | `section`   | Many-to-One   | A Content belongs to one Section   |
+
+:::tip[Think of it like a bookshelf]
+**Collection** = the bookshelf, **Section** = a shelf, **Content** = a book on that shelf. Every book sits on exactly one shelf, and every shelf sits on exactly one bookshelf.
+:::
+
+---
+
+## 2. The Data Model in Detail
+
+### 📚 Collection — the top-level grouping
+
+Represents the top-level grouping of documentation.
+
+| Field         | Type                 | Purpose                          |
+| ------------- | -------------------- | --------------------------------- |
+| `name`        | Text                 | Display name of the collection    |
+| `slug`        | UID                  | URL-safe identifier               |
+| `description` | Text                 | Short description                 |
+| `sortOrder`   | Number               | Controls ordering                 |
+| `sections`    | One-to-Many → Section| Collection contains many sections |
+
+**Relationship:** `Collection (1) ──── (N) Section`
+
+### 🗂️ Section — a logical grouping inside a Collection
+
+Represents a logical grouping of documents inside a collection.
+
+| Field         | Type                 | Purpose                             |
+| ------------- | -------------------- | ------------------------------------ |
+| `name`        | Text                 | Section name                         |
+| `slug`        | UID                  | URL-safe identifier                  |
+| `description` | Text                 | Optional section description         |
+| `sortOrder`   | Number               | Controls ordering                    |
+| `collection`  | Many-to-One → Collection | Section belongs to one collection |
+| `contents`    | One-to-Many → Content| Section contains many documents      |
+
+**Relationships:**
+- `Section (N) ──── (1) Collection`
+- `Section (1) ──── (N) Content`
+
+### 📄 Content — the actual piece of documentation
+
+Represents the actual piece of documentation/content.
+
+| Field         | Type                | Purpose                          |
+| ------------- | ------------------- | ---------------------------------- |
+| `title`       | Text                | Document title                     |
+| `slug`        | UID                 | URL-safe identifier                |
+| `description` | Text                | Short description/excerpt          |
+| `mdxContent`  | Text / Long Text    | Markdown/MDX/document content      |
+| `sortOrder`   | Number              | Controls ordering                  |
+| `section`     | Many-to-One → Section| Document belongs to one section   |
+
+**Relationship:** `Content (N) ──── (1) Section`
+
+---
+
+## 3. Step-by-Step: Building the Model in Strapi
+
+:::caution[Key decision: how MDX content is stored]
+Store `mdxContent` as **Long Text (plain)** — **not** Strapi's Rich Text (Blocks) field. Blocks stores structured JSON, not raw MDX, which would break your `.mdx` syntax (JSX components, frontmatter, imports, code fences). Long text keeps the raw MDX string fully intact.
+:::
+
+### Step 1 — Open the Content-Type Builder
+
+Go to the admin panel at `localhost:1337/admin` → **Content-Type Builder** → **Create new collection type**.
+
+### Step 2 — Create the `Collection` type
+
+| Field         | Type     | Notes                     |
+| ------------- | -------- | -------------------------- |
+| `name`        | Text     | —                           |
+| `slug`        | UID      | Attached to `name`          |
+| `description` | Text     | —                           |
+| `sortOrder`   | Number   | e.g. `1`–`10`                |
+| `sections`    | Relation | One-to-Many → `Section`     |
+
+### Step 3 — Create the `Section` type
+
+| Field         | Type     | Notes                        |
+| ------------- | -------- | ------------------------------ |
+| `name`        | Text     | —                              |
+| `slug`        | UID      | Attached to `name`             |
+| `description` | Text     | —                              |
+| `sortOrder`   | Number   | e.g. `1`–`10`                    |
+| `collection`  | Relation | Many-to-One → `Collection`     |
+| `contents`    | Relation | One-to-Many → `Content`        |
+
+### Step 4 — Create the `Content` type
+
+| Field         | Type          | Notes                                       |
+| ------------- | ------------- | --------------------------------------------- |
+| `title`       | Text          | —                                              |
+| `slug`        | UID           | Attached to `title`                            |
+| `description` | Text          | —                                              |
+| `mdxContent`  | Long Text     | ⚠️ Plain text, **not** Rich Text/Blocks         |
+| `sortOrder`   | Number        | e.g. `1`–`10`                                    |
+| `section`     | Relation      | Many-to-One → `Section`                        |
+
+### Step 5 — Verify in the database
+
+Once saved, Strapi generates the underlying tables automatically. Open your `neondb` database and confirm you now see three tables:
+
+- ✅ `collections`
+- ✅ `sections`
+- ✅ `contents`
+
+:::note[Done!]
+That's the full model — three tables, three relationships, one clean hierarchy. Everything else you build on top (querying, rendering MDX on the frontend, sidebar generation) starts from this foundation.
+:::

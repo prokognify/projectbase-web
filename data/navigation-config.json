@@ -1,0 +1,5 @@
+{
+  "root": "projects",
+  "children": "modules",
+  "node": "tasks"
+}

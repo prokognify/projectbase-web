@@ -1,0 +1,224 @@
+import React from 'react';
+import Link from '@docusaurus/Link';
+import Layout from '@theme/Layout';
+import Heading from '@theme/Heading';
+import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
+
+import navigationData from '@site/data/navigation.json';
+import navigationConfig from '@site/data/navigation-config.json';
+
+import styles from './index.module.css'; // Codebase 02 CSS module
+
+const projects = Array.isArray(navigationData) ? navigationData : [];
+
+const childrenKey = navigationConfig.children;
+const nodeKey = navigationConfig.node;
+
+// ----------------------------------------------------------------------------
+// Header labels from config keys (capitalised)
+// ----------------------------------------------------------------------------
+function capitalise(str) {
+    return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+const rootLabel = capitalise(navigationConfig.root);   // e.g. "Projects"
+const childrenLabel = capitalise(childrenKey);          // e.g. "Modules"
+const nodeLabel = capitalise(nodeKey);                  // e.g. "Tasks"
+
+// ----------------------------------------------------------------------------
+// Endpoint helpers (unchanged from Codebase 01)
+// ----------------------------------------------------------------------------
+function getProjectEndpoint(project) {
+    return `/docs/${project.slug}`;
+}
+
+function getModuleEndpoint(project, module) {
+    return `/docs/${project.slug}/${module.slug}`;
+}
+
+function getTaskEndpoint(task) {
+    return task.path;
+}
+
+// ----------------------------------------------------------------------------
+// Flatten projects → modules → tasks into row descriptors (unchanged)
+// ----------------------------------------------------------------------------
+function buildRows(allProjects) {
+    const rows = [];
+
+    allProjects.forEach((project) => {
+        const modules = project[childrenKey] ?? [];
+
+        const moduleRows = (modules.length > 0 ? modules : [null]).map((module) => {
+            const tasks = module ? module[nodeKey] ?? [] : [];
+            return {
+                module,
+                tasks: tasks.length > 0 ? tasks : [null],
+            };
+        });
+
+        const projectRowSpan = moduleRows.reduce(
+            (sum, m) => sum + m.tasks.length,
+            0
+        );
+
+        let projectRendered = false;
+
+        moduleRows.forEach((moduleRow) => {
+            let moduleRendered = false;
+
+            moduleRow.tasks.forEach((task) => {
+                rows.push({
+                    project,
+                    module: moduleRow.module,
+                    task,
+                    showProject: !projectRendered,
+                    projectRowSpan,
+                    showModule: !moduleRendered,
+                    moduleRowSpan: moduleRow.tasks.length,
+                });
+
+                projectRendered = true;
+                moduleRendered = true;
+            });
+        });
+    });
+
+    return rows;
+}
+
+// ----------------------------------------------------------------------------
+// Empty state (from Codebase 02)
+// ----------------------------------------------------------------------------
+function EmptyState() {
+    return (
+        <section className={styles.hero}>
+            <p className={styles.kicker}>Generated from your Strapi content</p>
+            <Heading as="h1" className={styles.headline}>
+                Where content meets automation
+            </Heading>
+            <p className={styles.subhead}>
+                No docs published yet. Run <code>npm run generate:navigation</code> after
+                publishing content in Strapi.
+            </p>
+        </section>
+    );
+}
+
+// ----------------------------------------------------------------------------
+// Table component (Codebase 01 logic + Codebase 02 styling)
+// ----------------------------------------------------------------------------
+function DocsTable() {
+    if (projects.length === 0) {
+        return <EmptyState />;
+    }
+
+    const rows = buildRows(projects);
+
+    return (
+        <>
+            <section className={styles.hero}>
+                <p className={styles.kicker}>Generated from your Strapi content</p>
+                <Heading as="h1" className={styles.headline}>
+                    Where content meets automation
+                </Heading>
+                <p className={styles.subhead}>
+                    Every collection, section and entry below is pulled straight from
+                    Strapi and rebuilt the moment content changes — MDX, navigation and
+                    search stay in sync without a manual step, all the way through to
+                    deployment.
+                </p>
+            </section>
+
+            <section className={styles.registerWrap}>
+                <table className={styles.register}>
+                    <colgroup>
+                        <col className={styles.colCollection} />
+                        <col className={styles.colSection} />
+                        <col className={styles.colEntry} />
+                    </colgroup>
+                    <thead>
+                    <tr>
+                        <th scope="col" className={styles.headCell}>{rootLabel}</th>
+                        <th scope="col" className={styles.headCell}>{childrenLabel}</th>
+                        <th scope="col" className={styles.headCell}>{nodeLabel}</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {rows.map((row, index) => {
+                        const key = [
+                            row.project.slug,
+                            row.module ? row.module.slug : 'no-module',
+                            row.task ? row.task.slug : 'no-task',
+                            index,
+                        ].join('-');
+
+                        return (
+                            <tr key={key}>
+                                {row.showProject && (
+                                    <td
+                                        rowSpan={row.projectRowSpan}
+                                        className={styles.collectionCell}
+                                    >
+                                        <Link to={getProjectEndpoint(row.project)}>
+                                            {row.project.name}
+                                        </Link>
+                                    </td>
+                                )}
+
+                                {row.module ? (
+                                    row.showModule && (
+                                        <td
+                                            rowSpan={row.moduleRowSpan}
+                                            className={styles.sectionCell}
+                                        >
+                                            <Link
+                                                to={getModuleEndpoint(row.project, row.module)}
+                                                className={styles.sectionLink}
+                                            >
+                                                {row.module.name}
+                                            </Link>
+                                        </td>
+                                    )
+                                ) : (
+                                    <td className={styles.sectionCell}>—</td>
+                                )}
+
+                                {row.task ? (
+                                    <td className={styles.entryCell}>
+                                        <Link
+                                            to={getTaskEndpoint(row.task)}
+                                            className={styles.entryLink}
+                                        >
+                                            {row.task.title}
+                                        </Link>
+                                    </td>
+                                ) : (
+                                    <td className={styles.entryCell}>—</td>
+                                )}
+                            </tr>
+                        );
+                    })}
+                    </tbody>
+                </table>
+            </section>
+        </>
+    );
+}
+
+// ----------------------------------------------------------------------------
+// Layout wrapper
+// ----------------------------------------------------------------------------
+const Index = () => {
+    const { siteConfig } = useDocusaurusContext();
+
+    return (
+        <Layout title={siteConfig.title} description={siteConfig.tagline}>
+            <main className={styles.main}>
+                <DocsTable />
+            </main>
+        </Layout>
+    );
+};
+
+export default Index;

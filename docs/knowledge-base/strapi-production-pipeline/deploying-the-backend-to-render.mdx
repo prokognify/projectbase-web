@@ -1,0 +1,164 @@
+---
+title: "Deploying the Backend to Render"
+sidebar_label: "Deploying the Backend to Render"
+root_name: "KnowledgeBase"
+child_name: "Strapi Production Pipeline"
+---
+
+Deploying your backend shouldn't feel like a chore. This guide walks you through spinning up a **Strapi backend on Render**, wiring up environment variables, and exposing the public API your Docusaurus site consumes — start to finish, in about 10 minutes. ⏱️
+ 
+:::info[What you'll need]
+- A [Render](https://render.com) account connected to your GitHub
+- A backend repo ready to deploy (e.g. `knowledgebase-core`)
+- Your environment variables (or a `.env` file) handy
+:::
+----
+ 
+## Step 1 — Start a New Web Service
+ 
+From your Render dashboard:
+ 
+1. Click **+ New** (top right)
+2. Select **Web Service** from the dropdown
+<details>
+<summary>Other options in that menu</summary>
+Render also offers **Static Site**, **Private Service**, and **Workflow** — but for a running backend API, **Web Service** is what you want.
+ 
+</details>
+----
+ 
+## Step 2 — Connect Your Git Repository
+ 
+1. Choose your **Git Provider** (e.g. GitHub) and pick from your connected repos — `docforge-web`, `docforge-core`, `drfdocs`, etc.
+2. Select the repo you want to deploy — for example, **`knowledgebase-core`**
+:::tip[Tips]
+Don't see your repo? Make sure the Render GitHub App has access to it under your GitHub organization settings.
+:::
+ 
+----
+ 
+## Step 3 — Configure the Service
+ 
+Render auto-detects your stack (Node, Python, etc.) and prefills most fields for you. Double-check each one:
+ 
+| Field | What it means | Example |
+|---|---|---|
+| **Name** | Unique service name — becomes part of your URL | `knowledgebase-core` |
+| **Project** | Optional grouping into a project/environment | `My project → Production` |
+| **Language** | Detected runtime | `Node` |
+| **Branch** | Git branch to deploy | `main` |
+| **Region** | Pick one close to your users/other services | `Singapore` (lower latency to Bangladesh) |
+| **Root Directory** | Only needed for monorepos | *(leave blank if app is at repo root)* |
+| **Build Command** | How the app is built | `npm install && npm run build` |
+| **Start Command** | How the app is started | `npm run start` |
+ 
+----
+ 
+## Step 4 — Choose an Instance Type
+ 
+Pick a plan based on your traffic and budget:
+ 
+| Plan | RAM | CPU | Notes |
+|---|---|---|---|
+| **Free** | 512 MB | 0.1 | Spins down when idle · no SSH/scaling/persistent disks |
+| **Starter** — $7/mo | 512 MB | 0.5 | |
+| **Standard** — $25/mo | 2 GB | 1 | |
+| **Pro** — $85/mo | 4 GB | 2 | |
+| **Pro Plus** — $175/mo | 8 GB | 4 | |
+| **Pro Max** — $225/mo | 16 GB | 4 | |
+| **Pro Ultra** — $450/mo | 32 GB | 8 | |
+ 
+:::note[Notes]
+The **Free** tier is great for testing, but it spins down after inactivity — expect a cold-start delay on the first request after idling.
+:::
+ 
+----
+ 
+## Step 5 — Set Environment Variables
+ 
+You have two options:
+ 
+- **Manually** — click **+ Add Environment Variable**, then enter each `NAME_OF_VARIABLE` and value one at a time. A **Generate** button is available for secrets.
+- **Bulk import** — click **Add from .env**, then paste your `.env` contents directly (`KEY=VALUE` per line), or drag-and-drop / upload the file.
+
+:::danger[Never commit secrets to your repo]
+Environment variables belong in Render's dashboard — not in your codebase. If a `.env` file with real secrets ever gets pushed to GitHub, rotate those secrets immediately.
+:::
+ 
+----
+ 
+## Step 6 — Confirm the Deploy & Log In
+ 
+Once the build finishes, Render prints your live URL in the logs:
+ 
+```bash
+==> Available at your primary URL https://knowledgebase-core.onrender.com
+```
+ 
+Open that URL and append `/admin` to reach the Strapi admin panel, then sign in with your admin credentials.
+ 
+:::warning[Keep credentials out of docs]
+Never paste real email/password pairs into documentation, even internal docs. Store them in a password manager or Render's environment variables instead.
+:::
+ 
+<details>
+<summary>🔍 What a healthy deploy log looks like</summary>
+Look for these key markers to confirm a successful launch:
+ 
+```bash
+✔ Building admin panel (24196ms)
+==> Build successful 🎉
+==> Deploying...
+==> Your service is live 🎉
+[info]: Strapi started successfully
+```
+ 
+If you instead see `No open ports detected`, double-check your **Start Command** and that your app binds to `0.0.0.0` on the port Render provides.
+ 
+</details>
+----
+ 
+## Step 7 — Enable Public API Access
+ 
+By default, Strapi's API is locked down. To expose the endpoints your Docusaurus plugin needs:
+ 
+1. In the Strapi admin panel, go to **Settings → Users & Permissions Plugin → Roles → Public**
+2. Under each relevant **Content-Type** (e.g. `Docs`), check the permissions you need:
+   - ☑ **find**
+   - ☑ **findOne**
+:::tip[Which permission do I actually need?]
+For a Docusaurus plugin calling `GET /api/docs`, **`find`** is the one that matters — it powers list/collection requests.
+:::
+ 
+3. Click **Save**
+----
+ 
+## Step 8 — Test the API Endpoints
+ 
+Commit your changes to GitHub — Render will redeploy automatically, and the update will be live on your production URL.
+ 
+Then verify the endpoints in Postman (or your browser):
+ 
+```Endpoint
+https://knowledgebase-core.onrender.com/api/collections?populate=*
+https://knowledgebase-core.onrender.com/api/sections?populate=*
+https://knowledgebase-core.onrender.com/api/contents?populate=*
+```
+ 
+Each should return a `200` response with your populated content. ✅
+ 
+----
+ 
+## Quick Recap
+ 
+- [x] Web Service created & repo connected
+- [x] Build/start commands configured
+- [x] Instance type chosen
+- [x] Environment variables set
+- [x] Deploy confirmed live
+- [x] Public role permissions enabled (`find`, `findOne`)
+- [x] Endpoints tested in Postman
+
+:::[tip You're done! 🎉]
+Your backend is now live and serving public API data to your Docusaurus frontend.
+:::
