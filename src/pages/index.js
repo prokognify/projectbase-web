@@ -29,11 +29,14 @@ const nodeLabel = capitalise(nodeKey);                  // e.g. "Tasks"
 // Endpoint helpers (unchanged from Codebase 01)
 // ----------------------------------------------------------------------------
 function getProjectEndpoint(project) {
-    return `/docs/${project.slug}`;
+    const firstModule = (project[childrenKey] ?? [])[0];
+    const firstTask = firstModule ? (firstModule[nodeKey] ?? [])[0] : null;
+    return firstTask ? firstTask.path : '#';
 }
 
 function getModuleEndpoint(project, module) {
-    return `/docs/${project.slug}/${module.slug}`;
+    const firstTask = (module[nodeKey] ?? [])[0];
+    return firstTask ? firstTask.path : '#';
 }
 
 function getTaskEndpoint(task) {
