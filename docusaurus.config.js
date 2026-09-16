@@ -2,14 +2,14 @@ import {themes as prismThemes} from 'prism-react-renderer';
 
 const config = {
   title: 'ProjectBase',
-  tagline: 'Knowledge will be organized',
+  tagline: 'Project will be organized',
   favicon: 'img/favicon.ico',
 
   future: {
     v4: true,
   },
 
-  url: 'https://knowledgebase-web.vercel.app',
+  url: 'https://projectbase-web-umber.vercel.app/',
   baseUrl: '/',
 
   i18n: {
@@ -17,23 +17,41 @@ const config = {
     locales: ['en'],
   },
 
+  // ------------------------------------------------------------
+  // Markdown
+  // ------------------------------------------------------------
+
+  markdown: {
+    mermaid: true,
+  },
+
+  // ------------------------------------------------------------
+  // Presets
+  // ------------------------------------------------------------
+
   presets: [
     [
       'classic',
-      ({
+      {
         docs: {
           sidebarPath: './sidebars.js',
-          editUrl: 'https://github.com/devarifur007/knowledgebase-web',
+          editUrl: 'https://github.com/prokognify/projectbase-web',
         },
 
         theme: {
           customCss: './src/css/custom.css',
         },
-      }),
+      },
     ],
   ],
 
+  // ------------------------------------------------------------
+  // Themes
+  // ------------------------------------------------------------
+
   themes: [
+    '@docusaurus/theme-mermaid',
+
     [
       require.resolve('@easyops-cn/docusaurus-search-local'),
       {
@@ -50,6 +68,10 @@ const config = {
     ],
   ],
 
+  // ------------------------------------------------------------
+  // Theme configuration
+  // ------------------------------------------------------------
+
   themeConfig: {
     colorMode: {
       respectPrefersColorScheme: true,
@@ -57,11 +79,22 @@ const config = {
 
     navbar: {
       logo: {
-        alt: 'KnowledgeBase',
+        alt: 'ProjectBase',
         src: 'img/logo-light.svg',
       },
 
       items: [],
+    },
+
+    // ----------------------------------------------------------
+    // Mermaid
+    // ----------------------------------------------------------
+
+    mermaid: {
+      theme: {
+        light: 'neutral',
+        dark: 'dark',
+      },
     },
 
     prism: {
