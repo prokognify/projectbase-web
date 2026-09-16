@@ -6,6 +6,8 @@ child_name: "Strapi Production Pipeline"
 ---
 
 import Admonition from '@theme/Admonition';
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
 
 Every piece of documentation in this system lives inside a simple, three-level hierarchy. Understand this once, and the rest of the CMS setup falls into place. 🧩
 
@@ -137,6 +139,49 @@ Once saved, Strapi generates the underlying tables automatically. Open your `neo
 - ✅ `collections`
 - ✅ `sections`
 - ✅ `contents`
+
+---
+
+## 4. Push the Code to GitHub
+
+<Tabs>
+<TabItem value="init" label="1. Check & stage changes" default>
+
+```bash
+git status
+git add .
+```
+
+</TabItem>
+<TabItem value="commit" label="2. Commit">
+
+```bash
+git commit -m "KnowledgeBase Backend/Core installed successfully"
+```
+
+</TabItem>
+<TabItem value="remote" label="3. Connect to GitHub">
+
+```bash
+git remote add origin git@github.com:<your-username>/knowledgebase-core.git
+git branch -M main
+```
+
+</TabItem>
+<TabItem value="push" label="4. Push">
+
+```bash
+git push -u origin main
+```
+
+</TabItem>
+</Tabs>
+
+:::info[CRLF warnings are harmless]
+On Windows, you may see `warning: LF will be replaced by CRLF` for the generated `types/generated/*.d.ts` files — this is just Git's line-ending normalization and is safe to ignore.
+:::
+
+---
 
 :::note[Done!]
 That's the full model — three tables, three relationships, one clean hierarchy. Everything else you build on top (querying, rendering MDX on the frontend, sidebar generation) starts from this foundation.

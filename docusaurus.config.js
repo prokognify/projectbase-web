@@ -18,6 +18,43 @@ const config = {
   },
 
   // ------------------------------------------------------------
+  // Tailwind + shadcn
+  // ------------------------------------------------------------
+
+  plugins: [
+    function tailwindPlugin(context, options) {
+      return {
+        name: 'tailwind-plugin',
+
+        configurePostCss(postcssOptions) {
+          postcssOptions.plugins = [
+            require('@tailwindcss/postcss'),
+            require('autoprefixer'),
+          ];
+
+          return postcssOptions;
+        },
+      };
+    },
+
+    function aliasPlugin(context, options) {
+      return {
+        name: 'alias-plugin',
+
+        configureWebpack() {
+          return {
+            resolve: {
+              alias: {
+                '@': require('path').resolve(__dirname, 'src'),
+              },
+            },
+          };
+        },
+      };
+    },
+  ],
+
+  // ------------------------------------------------------------
   // Markdown
   // ------------------------------------------------------------
 

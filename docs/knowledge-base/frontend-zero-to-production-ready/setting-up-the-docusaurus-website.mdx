@@ -1117,7 +1117,7 @@ module.exports = generateSidebars();
 
 ### 4.4 Homepage — `src/pages/index.js`
 
-Renders a spanning register table of every collection, with each collection's sections and their nested sections shown as linked rows down to the first available entry.
+Renders a card grid of every collection, linking each section to its first content.
 
 ```jsx title="src/pages/index.js"
 import React from 'react';
@@ -1128,204 +1128,147 @@ import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import navigationData from '@site/data/navigation.json';
 import navigationConfig from '@site/data/navigation-config.json';
 
-import styles from './index.module.css';
+const projects = Array.isArray(navigationData)
+    ? navigationData
+    : [];
 
-const collections = Array.isArray(navigationData) ? navigationData : [];
+const childrenKey = navigationConfig.children;
+const nodeKey = navigationConfig.node;
 
-// These come from config rather than being hardcoded, so the same component
-// keeps working if the Strapi content-type field names change later.
-const sectionsKey = navigationConfig.children; // e.g. "modules" in the raw data
-const entriesKey = navigationConfig.node;      // e.g. "tasks" in the raw data
+function getFirstTask(project) {
+    const modules = project[childrenKey] ?? [];
 
-// Strapi data has been inconsistent about whether the display field is
-// called "name" or "title" depending on the content type -- read either.
-function getLabel(item) {
-    return item?.name ?? item?.title ?? '';
+    const firstModule = modules[0];
+
+    if (!firstModule) {
+        return null;
+    }
+
+    const tasks = firstModule[nodeKey] ?? [];
+
+    return tasks[0] ?? null;
 }
 
-function getSections(collection) {
-    return collection[sectionsKey] ?? [];
-}
-
-function getEntries(section) {
-    return section[entriesKey] ?? [];
-}
-
-// A section with no entries yet still needs somewhere to link to once it
-// does, so it borrows the path of its first entry.
-function getSectionHref(section) {
-    const entries = getEntries(section);
-    return entries[0]?.path;
-}
-
-/**
- * Flattens a collection's sections/entries into one row per entry (or one
- * row per empty section), so the table body can be built with a single map().
- */
-function buildRows(collection) {
-    const sections = getSections(collection);
-    const rows = [];
-
-    sections.forEach((section) => {
-        const entries = getEntries(section);
-
-        if (entries.length === 0) {
-            rows.push({ section, entry: null, isFirstOfSection: true, sectionRowSpan: 1 });
-            return;
-        }
-
-        entries.forEach((entry, entryIndex) => {
-            rows.push({
-                section,
-                entry,
-                isFirstOfSection: entryIndex === 0,
-                sectionRowSpan: entries.length,
-            });
-        });
-    });
-
-    return rows;
-}
-
-function CollectionGroup({ collection }) {
-    const sections = getSections(collection);
-
-    if (sections.length === 0) {
+function DocsIndex() {
+    if (projects.length === 0) {
         return (
-            <tbody className={styles.collectionGroup}>
-            <tr>
-                <th scope="rowgroup" className={styles.collectionCell}>
-                    {getLabel(collection)}
-                </th>
-                <td className={styles.emptyCell} colSpan={2}>
-                    No sections yet.
-                </td>
-            </tr>
-            </tbody>
+            <section className="container margin-vert--lg">
+                <p>
+                    No docs published yet. Run{' '}
+                    <code>npm run generate:navigation</code>{' '}
+                    after publishing content in Strapi.
+                </p>
+            </section>
         );
     }
 
-    const rows = buildRows(collection);
-    const collectionRowSpan = rows.length;
-
     return (
-        <tbody className={styles.collectionGroup}>
-        {rows.map((row, index) => {
-            const { section, entry, isFirstOfSection, sectionRowSpan } = row;
-            const sectionHref = getSectionHref(section);
-            const rowKey = `${section.slug}-${entry ? (entry.path ?? entry.slug) : 'empty'}`;
-
-            return (
-                <tr key={rowKey}>
-                    {index === 0 && (
-                        <th
-                            scope="rowgroup"
-                            rowSpan={collectionRowSpan}
-                            className={styles.collectionCell}
-                        >
-                            {getLabel(collection)}
-                        </th>
-                    )}
-
-                    {isFirstOfSection && (
-                        <th
-                            scope="rowgroup"
-                            rowSpan={sectionRowSpan}
-                            className={styles.sectionCell}
-                        >
-                            {sectionHref ? (
-                                <a href={sectionHref} className={styles.sectionLink}>
-                                    {getLabel(section)}
-                                </a>
-                            ) : (
-                                <span className={styles.sectionLinkless}>
-                                        {getLabel(section)}
-                                    </span>
-                            )}
-                        </th>
-                    )}
-
-                    {entry ? (
-                        <td className={styles.entryCell}>
-                            <a href={entry.path} className={styles.entryLink}>
-                                {getLabel(entry)}
-                            </a>
-                        </td>
-                    ) : (
-                        <td className={styles.emptyCell}>No sections yet.</td>
-                    )}
-                </tr>
-            );
-        })}
-        </tbody>
-    );
-}
-
-function EmptyState() {
-    return (
-        <section className={styles.hero}>
-            <p className={styles.kicker}>Generated from your Strapi content</p>
-            <Heading as="h1" className={styles.headline}>
-                Where content meets automation
+        <section className="container margin-vert--lg">
+            <Heading as="h2">
+                Browse by project
             </Heading>
-            <p className={styles.subhead}>
-                No docs published yet. Run <code>npm run generate:navigation</code> after
-                publishing content in Strapi.
-            </p>
+
+            <div className="row">
+                {projects.map((project) => {
+                    const modules =
+                        project[childrenKey] ?? [];
+
+                    const firstTask =
+                        getFirstTask(project);
+
+                    return (
+                        <div
+                            key={project.slug}
+                            className="col col--4 margin-bottom--lg"
+                        >
+                            <div className="card">
+
+                                {/* Project name */}
+
+                                <div className="card__header">
+                                    <Heading as="h3">
+                                        {project.name}
+                                    </Heading>
+                                </div>
+
+                                {/* Modules */}
+
+                                <div className="card__body">
+                                    {modules.length > 0 ? (
+                                        <ul>
+                                            {modules.map(
+                                                (module) => {
+                                                    const tasks =
+                                                        module[
+                                                            nodeKey
+                                                            ] ?? [];
+
+                                                    const firstTask =
+                                                        tasks[0];
+
+                                                    if (
+                                                        !firstTask
+                                                    ) {
+                                                        return (
+                                                            <li
+                                                                key={
+                                                                    module.slug
+                                                                }
+                                                            >
+                                                                {
+                                                                    module.name
+                                                                }
+                                                            </li>
+                                                        );
+                                                    }
+
+                                                    return (
+                                                        <li
+                                                            key={
+                                                                module.slug
+                                                            }
+                                                        >
+                                                            <a
+                                                                href={
+                                                                    firstTask.path
+                                                                }
+                                                            >
+                                                                {
+                                                                    module.name
+                                                                }
+                                                            </a>
+                                                        </li>
+                                                    );
+                                                }
+                                            )}
+                                        </ul>
+                                    ) : (
+                                        <p>
+                                            No modules yet.
+                                        </p>
+                                    )}
+                                </div>
+
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
         </section>
     );
 }
 
-function DocsRegister() {
-    if (collections.length === 0) {
-        return <EmptyState />;
-    }
-
-    return (
-        <>
-            <section className={styles.hero}>
-                <p className={styles.kicker}>Generated from your Strapi content</p>
-                <Heading as="h1" className={styles.headline}>
-                    Where content meets automation
-                </Heading>
-                <p className={styles.subhead}>
-                    Every collection, section and entry below is pulled straight from
-                    Strapi and rebuilt the moment content changes — MDX, navigation and
-                    search stay in sync without a manual step, all the way through to
-                    deployment.
-                </p>
-            </section>
-
-            <section className={styles.registerWrap}>
-                <table className={styles.register}>
-                    <colgroup>
-                        <col className={styles.colCollection} />
-                        <col className={styles.colSection} />
-                        <col className={styles.colEntry} />
-                    </colgroup>
-                    <thead>
-                    <tr>
-                        <th scope="col" className={styles.headCell}>Collection</th>
-                        <th scope="col" className={styles.headCell}>Section</th>
-                        <th scope="col" className={styles.headCell}>Section</th>
-                    </tr>
-                    </thead>
-                    {collections.map((collection) => (
-                        <CollectionGroup key={collection.slug} collection={collection} />
-                    ))}
-                </table>
-            </section>
-        </>
-    );
-}
-
 const Index = () => {
-    const { siteConfig } = useDocusaurusContext();
+    const {siteConfig} =
+        useDocusaurusContext();
 
     return (
-        <Layout title={siteConfig.title} description={siteConfig.tagline}>
-            <main className={styles.main}>
-                <DocsRegister />
+        <Layout
+            title={siteConfig.title}
+            description={siteConfig.tagline}
+        >
+            <main>
+                <DocsIndex />
             </main>
         </Layout>
     );
@@ -1334,211 +1277,7 @@ const Index = () => {
 export default Index;
 ```
 
-### 4.5 Homepage styles — `src/pages/index.module.css`
-
-Styles the register table with a tier-coded left border (teal for sections, amber for entries) so the hierarchy reads at a glance, monospace type for links since they map to actual route paths, and a horizontal-scroll container so the table stays usable on narrow screens.
-```jsx title="src/pages/index.module.css"
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap');
-/*
-  Prefer moving this @import into a <link rel="preconnect"> / <link rel="stylesheet">
-  pair in docusaurus.config.js head tags for faster first paint -- left as an
-  @import here so this file is drop-in on its own.
-*/
-
-.main {
-  --ink: #e7e4dc;
-  --ink-dim: #8d93a0;
-  --ink-faint: #565c68;
-  --bg: #0e1013;
-  --panel: #14171c;
-  --line: #262b33;
-  --line-strong: #343941;
-  --section: #4fd1c5;
-  --section-dim: rgba(79, 209, 197, 0.14);
-  --entry: #e8b04b;
-  --entry-dim: rgba(232, 176, 75, 0.12);
-
-  background: var(--bg);
-  color: var(--ink);
-  font-family: 'IBM Plex Sans', system-ui, sans-serif;
-  padding: 4rem 1.5rem 6rem;
-}
-
-/* ---------- Hero ---------- */
-
-.hero {
-  max-width: 640px;
-  margin: 0 auto 3.5rem;
-  padding-left: 1.1rem;
-  border-left: 2px solid var(--section);
-}
-
-.kicker {
-  margin: 0 0 0.9rem;
-  font-size: 0.85rem;
-  color: var(--ink-dim);
-  font-family: 'IBM Plex Mono', monospace;
-}
-
-.headline {
-  font-family: 'Space Grotesk', system-ui, sans-serif;
-  font-weight: 600;
-  font-size: clamp(2rem, 4vw, 2.75rem);
-  line-height: 1.15;
-  letter-spacing: -0.01em;
-  color: var(--ink);
-  margin: 0 0 1rem;
-}
-
-.subhead {
-  font-size: 1.05rem;
-  line-height: 1.65;
-  color: var(--ink-dim);
-  margin: 0;
-}
-
-.subhead code {
-  background: var(--panel);
-  border: 1px solid var(--line);
-  border-radius: 3px;
-  padding: 0.1rem 0.4rem;
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.92em;
-  color: var(--ink);
-}
-
-/* ---------- Register table ---------- */
-
-.registerWrap {
-  max-width: 1080px;
-  margin: 0 auto;
-  overflow-x: auto;
-  border-top: 1px solid var(--line-strong);
-  border-bottom: 1px solid var(--line-strong);
-}
-
-.register {
-  width: 100%;
-  min-width: 720px;
-  border-collapse: collapse;
-  font-size: 0.95rem;
-}
-
-.colCollection { width: 26%; }
-.colSection { width: 32%; }
-.colEntry { width: 42%; }
-
-.headCell {
-  text-align: left;
-  font-weight: 500;
-  font-size: 0.8rem;
-  color: var(--ink-faint);
-  padding: 0.85rem 1.25rem;
-  border-bottom: 1px solid var(--line-strong);
-}
-
-.collectionGroup + .collectionGroup tr:first-child th,
-.collectionGroup + .collectionGroup tr:first-child td {
-  border-top: 1px solid var(--line-strong);
-}
-
-.collectionCell {
-  text-align: left;
-  vertical-align: top;
-  font-family: 'Space Grotesk', system-ui, sans-serif;
-  font-weight: 600;
-  font-size: 1.05rem;
-  color: var(--ink);
-  padding: 1.1rem 1.25rem;
-  border-right: 1px solid var(--line-strong);
-  background: var(--panel);
-}
-
-.sectionCell {
-  text-align: left;
-  vertical-align: top;
-  font-weight: 400;
-  padding: 0.9rem 1.25rem;
-  border-right: 1px solid var(--line);
-  border-left: 2px solid var(--section);
-}
-
-.entryCell {
-  vertical-align: top;
-  padding: 0.9rem 1.25rem;
-  border-left: 2px solid var(--entry);
-}
-
-.register tr:not(:last-child) .sectionCell,
-.register tr:not(:last-child) .entryCell {
-  border-bottom: 1px solid var(--line);
-}
-
-.register tbody tr:hover .entryCell {
-  background: var(--entry-dim);
-}
-
-.sectionLink,
-.entryLink {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.92rem;
-  color: var(--ink-dim);
-  text-decoration: none;
-  border-bottom: 1px solid transparent;
-}
-
-.sectionLink {
-  color: var(--ink);
-}
-
-.sectionLink:hover,
-.sectionLink:focus-visible {
-  color: var(--section);
-  border-bottom-color: var(--section);
-}
-
-.entryLink:hover,
-.entryLink:focus-visible {
-  color: var(--entry);
-  border-bottom-color: var(--entry);
-}
-
-.sectionLinkless {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.92rem;
-  color: var(--ink-faint);
-}
-
-.emptyCell {
-  padding: 0.9rem 1.25rem;
-  color: var(--ink-faint);
-  font-style: italic;
-}
-
-a.sectionLink:focus-visible,
-a.entryLink:focus-visible {
-  outline: 2px solid var(--section);
-  outline-offset: 2px;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .register * {
-    transition: none !important;
-  }
-}
-
-@media (max-width: 640px) {
-  .main {
-    padding: 3rem 1.1rem 4rem;
-  }
-
-  .hero {
-    padding-left: 0.9rem;
-  }
-}
-```
-
-### 4.6 Scripts — `package.json`
+### 4.5 Scripts — `package.json`
 
 ```json title="package.json"
 {
@@ -1591,16 +1330,6 @@ a.entryLink:focus-visible {
 
 ```
 
-## Step 5 — Run the Project 🎉
-
-With everything in place, generate the content and launch the dev server:
-
-```bash
-npm run generate:mdx
-npm run generate:navigation
-npm run start
-```
-
 :::tip[What just happened?]
 1. **`generate:mdx`** → pulls Strapi content and writes `.mdx` files into `docs/`
 2. **`generate:navigation`** → builds `data/navigation.json` + `data/navigation-config.json`
@@ -1612,3 +1341,4 @@ Your site should now be live at `http://localhost:3000`, with docs, sidebars, an
 :::note[Going forward]
 Next time, after publishing content in Strapi, only need to run `npm run start` to restart the dev server. No need to run `npm run generate:mdx` and `npm run generate:navigation` them again.
 :::
+

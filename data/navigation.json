@@ -38,12 +38,6 @@
             "slug": "creating-a-health-check-endpoint-in-strapi",
             "sortOrder": 5,
             "path": "/docs/knowledge-base/strapi-production-pipeline/creating-a-health-check-endpoint-in-strapi"
-          },
-          {
-            "title": "Content Manager Walkthrough",
-            "slug": "content-manager-walkthrough",
-            "sortOrder": 6,
-            "path": "/docs/knowledge-base/strapi-production-pipeline/content-manager-walkthrough"
           }
         ]
       },
@@ -53,21 +47,27 @@
         "sortOrder": 2,
         "tasks": [
           {
+            "title": "Content Manager Walkthrough",
+            "slug": "content-manager-walkthrough",
+            "sortOrder": 1,
+            "path": "/docs/knowledge-base/frontend-zero-to-production-ready/content-manager-walkthrough"
+          },
+          {
             "title": "Setting Up the Docusaurus Website",
             "slug": "setting-up-the-docusaurus-website",
-            "sortOrder": 1,
+            "sortOrder": 2,
             "path": "/docs/knowledge-base/frontend-zero-to-production-ready/setting-up-the-docusaurus-website"
           },
           {
             "title": "UI Customization & Navigation",
             "slug": "ui-customization-and-navigation",
-            "sortOrder": 2,
+            "sortOrder": 3,
             "path": "/docs/knowledge-base/frontend-zero-to-production-ready/ui-customization-and-navigation"
           },
           {
             "title": "Production & Deployment",
             "slug": "production-and-deployment-automation",
-            "sortOrder": 3,
+            "sortOrder": 4,
             "path": "/docs/knowledge-base/frontend-zero-to-production-ready/production-and-deployment-automation"
           }
         ]

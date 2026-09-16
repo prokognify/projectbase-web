@@ -5,9 +5,6 @@ root_name: "KnowledgeBase"
 child_name: "Strapi Production Pipeline"
 ---
 
-import Tabs from '@theme/Tabs';
-import TabItem from '@theme/TabItem';
-
 # 🚀 Setting Up the Backend with Strapi
 
 This guide walks you through creating the **KnowledgeBase** application's backend using **Strapi v5**, connected to a **PostgreSQL** database hosted on **Neon**, and pushing it to GitHub.
@@ -167,46 +164,6 @@ Never commit real emails, passwords, or database credentials into your documenta
 
 ---
 
-## Step 5 — Push the Code to GitHub
-
-<Tabs>
-<TabItem value="init" label="1. Check & stage changes" default>
-
-```bash
-git status
-git add .
-```
-
-</TabItem>
-<TabItem value="commit" label="2. Commit">
-
-```bash
-git commit -m "KnowledgeBase Backend/Core installed successfully"
-```
-
-</TabItem>
-<TabItem value="remote" label="3. Connect to GitHub">
-
-```bash
-git remote add origin git@github.com:<your-username>/knowledgebase-core.git
-git branch -M main
-```
-
-</TabItem>
-<TabItem value="push" label="4. Push">
-
-```bash
-git push -u origin main
-```
-
-</TabItem>
-</Tabs>
-
-:::info[CRLF warnings are harmless]
-On Windows, you may see `warning: LF will be replaced by CRLF` for the generated `types/generated/*.d.ts` files — this is just Git's line-ending normalization and is safe to ignore.
-:::
-
----
 
 ## ✅ Recap
 
