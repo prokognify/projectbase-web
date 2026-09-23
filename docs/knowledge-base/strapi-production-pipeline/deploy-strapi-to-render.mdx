@@ -1,17 +1,39 @@
 ---
-title: "Deploying the Backend to Render"
-sidebar_label: "Deploying the Backend to Render"
+title: "Deploy Strapi to Render"
+sidebar_label: "Deploy Strapi to Render"
 root_name: "KnowledgeBase"
 child_name: "Strapi Production Pipeline"
 ---
 
-Deploying your backend shouldn't feel like a chore. This guide walks you through spinning up a **Strapi backend on Render**, wiring up environment variables, and exposing the public API your Docusaurus site consumes — start to finish, in about 10 minutes. ⏱️
- 
-:::info[What you'll need]
-- A [Render](https://render.com) account connected to your GitHub
-- A backend repo ready to deploy (e.g. `knowledgebase-core`)
-- Your environment variables (or a `.env` file) handy
-:::
+# 🚀 Deploy Strapi to Render
+
+Deploy the **KnowledgeBase Strapi backend** to Render and connect it to your production frontend.
+
+This guide covers the complete deployment process—from connecting the GitHub repository and configuring the service to setting environment variables, enabling API permissions, and verifying the production API.
+
+## 🎯 Objective
+
+By the end of this guide, you will be able to:
+
+* Create a **Render Web Service**
+* Connect the **Strapi GitHub repository**
+* Configure the **build and start commands**
+* Add **production environment variables**
+* Deploy the Strapi application
+* Configure the required **API permissions**
+* Verify the **production API endpoints**
+
+## ✅ Prerequisites
+
+Before you begin, make sure you have:
+
+* A **Render account** connected to GitHub
+* The **`knowledgebase-core`** repository
+* Your **production environment variables**
+* A working **Strapi project**
+
+Once these are ready, you're ready to deploy your Strapi backend to Render.
+
 ----
  
 ## Step 1 — Start a New Web Service

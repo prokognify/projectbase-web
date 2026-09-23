@@ -1,6 +1,6 @@
 ---
-title: "Generalized Content Data Model"
-sidebar_label: "Generalized Content Data Model"
+title: "Design the Strapi Content Model"
+sidebar_label: "Design the Strapi Content Model"
 root_name: "KnowledgeBase"
 child_name: "Strapi Production Pipeline"
 ---
@@ -9,17 +9,38 @@ import Admonition from '@theme/Admonition';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-Every piece of documentation in this system lives inside a simple, three-level hierarchy. Understand this once, and the rest of the CMS setup falls into place. 🧩
+# 🧩 Design the Strapi Content Model
+
+The KnowledgeBase uses a simple three-level hierarchy:
+
+```text
+Collection
+└── Section
+    └── Content
+```
+
+This structure provides the foundation for organizing documentation, controlling navigation order, and storing MDX content.
+
+## 📌 Objective
+
+By the end of this guide, you will be able to:
+
+* Understand the KnowledgeBase data hierarchy.
+* Identify the purpose of each content type.
+* Configure the required fields.
+* Create the relationships between Collection, Section, and Content.
+* Store raw MDX safely in Strapi.
 
 :::info[What you'll learn]
 By the end of this guide you'll understand the **data model**, know **why each field exists**, and be able to **recreate the structure** in Strapi's Content-Type Builder.
 :::
 
+---
 ## 1. The Big Picture
 
 At its core, the business logic is just a three-level tree:
 
-```
+```text
 Collection (1)
    │
    └──< Section (N)
@@ -37,6 +58,8 @@ Collection (1)
 :::tip[Think of it like a bookshelf]
 **Collection** = the bookshelf, **Section** = a shelf, **Content** = a book on that shelf. Every book sits on exactly one shelf, and every shelf sits on exactly one bookshelf.
 :::
+
+Every piece of documentation in this system lives inside a simple, three-level hierarchy. Understand this once, and the rest of the CMS setup falls into place. 🧩
 
 ---
 

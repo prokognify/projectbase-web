@@ -1,26 +1,60 @@
 ---
-title: "Content Manager Walkthrough"
-sidebar_label: "Content Manager Walkthrough"
+title: "Manage Documentation Content in Strapi"
+sidebar_label: "Manage Documentation Content in Strapi"
 root_name: "KnowledgeBase"
-child_name: "Frontend: Zero to Production-Ready"
+child_name: "Strapi Production Pipeline"
 ---
 
-# 🗂️ Content Manager Walkthrough
+# 🗂️ Manage Documentation Content in Strapi
 
-Learn how to build a fully nested content hierarchy — **Collection → Section → Contents** — using the Content Manager. By the end of this guide, you'll have a working structure ready to publish.
+The content model is now ready:
 
-:::info[Data Model at a Glance]
-Your data model has three related collection types, nested like this:
-
-```
-Collection (e.g. "KnowledgeBase")
-  └── Section (e.g. "Strapi Production Pipeline")
-        └── Contents (e.g. "Create the Postgres Database in Neon")
+```text
+Collection
+└── Section
+    └── Content
 ```
 
-Each level has a relation field pointing to its parent/children, so you always build **top-down**: Collection first, then Section, then Contents.
-:::
- 
+This guide shows how to populate that hierarchy through Strapi's **Content Manager**.
+
+## Objective
+
+By the end of this guide, you will be able to:
+
+* Create a Collection.
+* Create Sections within a Collection.
+* Create Content entries within a Section.
+* Add MDX documentation to `mdxContent`.
+* Configure relationships correctly.
+* Control the display order using `sortOrder`.
+* Verify the complete hierarchy.
+
+---
+
+## Data Model at a Glance
+
+For example:
+
+```text
+Collection
+└── KnowledgeBase
+    └── Section
+        └── Strapi Production Pipeline
+            ├── Create PostgreSQL Database in Neon
+            ├── Set Up Strapi Backend
+            ├── Design Content Model
+            ├── Deploy Strapi to Render
+            └── Configure Health Check
+```
+
+The important rule is:
+
+```text
+Collection → Section → Content
+```
+
+Create the hierarchy from the top down.
+
 ---
 
 ## Step 1 — Create the Collection 🧱
@@ -31,6 +65,7 @@ Each level has a relation field pointing to its parent/children, so you always b
     - **`name`** — e.g. `KnowledgeBase`
     - **`slug`** — auto-generates from the name; click the refresh (↻) icon to regenerate if you rename it
     - **`description`** — a short summary of what this Collection covers
+    - **`mdxContent`** — Collection's homepage written in MDX/Markdown
     - **`sortOrder`** — controls display order if you have multiple Collections
 4. Leave the **`sections`** relation field empty — you'll link Sections to it from the Section side
 5. Click **Save**
@@ -47,6 +82,7 @@ Each level has a relation field pointing to its parent/children, so you always b
 2. Click **Create new entry**
 3. Fill in:
     - **`name`** — e.g. `Strapi Production Pipeline`
+    - **`mdxContent`** — Section's homepage written in MDX/Markdown
     - **`slug`**, **`description`**, **`sortOrder`** — same as above
 4. In the **`collection`** relation field, search for and select the Collection you created in Step 1 (e.g. `KnowledgeBase`) — this attaches the Section under that Collection
 5. Leave **`contents`** empty — you'll populate it from the Contents side next
@@ -88,18 +124,6 @@ Go back to the Section entry **Section** and confirm:
   :::tip[Sanity Check]
   This is your final check that the hierarchy nested correctly before you move on to the next Section.
   :::
-
-
-## 📌 Reference Tips
-
-| Tip | Why It Matters                                                                                                                             |
-|---|--------------------------------------------------------------------------------------------------------------------------------------------|
-| **Build top-down** | A relation field can only select entries that already exist, so Collection → Section → Contents order is mandatory, not optional           |
-| **Slug regeneration** | If you rename a name/title after the slug was set, click ↻ next to the slug field to resync it                                             |
-| **Relations are bidirectional** | Linking Contents to a Section also updates that Section's `contents` list automatically — no need to link both sides manually              |
-| **`sortOrder` drives sequence** | Set it deliberately if the reader is meant to go through Contents in a specific order (like a course)                                      |
-| **Drag to reorder** | On a Section's edit page, drag the ⠿ handle next to each linked Contents item to change display order without touching `sortOrder` numbers |
-| **One Section can hold many Contents** | There's no fixed limit — add as many Contents entries as the Section needs                                                                 |
 
 :::caution[Common Pitfall]
 Trying to create a Section before its Collection exists (or Contents before its Section) will leave you with nothing to select in the relation field. Always work **top-down**.

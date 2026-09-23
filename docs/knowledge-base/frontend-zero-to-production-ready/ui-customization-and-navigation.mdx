@@ -5,6 +5,9 @@ root_name: "KnowledgeBase"
 child_name: "Frontend: Zero to Production-Ready"
 ---
 
+import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
+
+
 # 🎨 UI Customization & Deployment
 
 This module walks you through customizing your Docusaurus UI end-to-end — from **ejecting core components** (swizzling) to **responsive styling**, a **theme-aware logo**, and finally **running the site**. By the end, you'll have full control over the Navbar, Breadcrumbs, and overall look and feel across light/dark themes.
@@ -140,7 +143,12 @@ Ejected Navbar/Content from @docusaurus/theme-classic to
 
 ### 1b. Replace `src/theme/Navbar/Content/index.js`
 
-```jsx
+<Accordion type="single" collapsible>
+  <AccordionItem value="full-code">
+    <AccordionTrigger>Show Full Code</AccordionTrigger>
+    <AccordionContent>
+
+```js
 import React, {useMemo, useState} from 'react';
 import Link from '@docusaurus/Link';
 import {useLocation} from '@docusaurus/router';
@@ -335,9 +343,18 @@ export default function NavbarContent() {
         </>
     );
 }
+
 ```
+   </AccordionContent>
+  </AccordionItem>
+</Accordion>
 
 ### 1c. Replace `src/theme/Navbar/Content/styles.module.css`
+
+<Accordion type="single" collapsible>
+  <AccordionItem value="full-code">
+    <AccordionTrigger>Show Full Code</AccordionTrigger>
+    <AccordionContent>
 
 ```css
 /* Hide color mode toggle in small viewports */
@@ -423,7 +440,11 @@ export default function NavbarContent() {
     display: none;
   }
 }
+
 ```
+   </AccordionContent>
+  </AccordionItem>
+</Accordion>
 
 ✅ **Navbar swizzling complete** — Sections now render as tabs, with a Collection Switcher accessible via `☰`.
 
@@ -456,7 +477,12 @@ Ejected DocBreadcrumbs from @docusaurus/theme-classic to
 
 ### 2b. Replace `src/theme/DocBreadcrumbs/index.js`
 
-```jsx
+<Accordion type="single" collapsible>
+  <AccordionItem value="full-code">
+    <AccordionTrigger>Show Full Code</AccordionTrigger>
+    <AccordionContent>
+
+```js
 import React from 'react';
 import Link from '@docusaurus/Link';
 import {useLocation} from '@docusaurus/router';
@@ -563,9 +589,18 @@ export default function DocBreadcrumbs() {
     </nav>
   );
 }
+
 ```
+   </AccordionContent>
+  </AccordionItem>
+</Accordion>
 
 ### 2c. Replace `src/theme/DocBreadcrumbs/styles.module.css`
+
+<Accordion type="single" collapsible>
+  <AccordionItem value="full-code">
+    <AccordionTrigger>Show Full Code</AccordionTrigger>
+    <AccordionContent>
 
 ```css
 .breadcrumbs {
@@ -606,6 +641,9 @@ export default function DocBreadcrumbs() {
   padding: 0.2rem 0.35rem;
 }
 ```
+   </AccordionContent>
+  </AccordionItem>
+</Accordion>
 
 ✅ **Breadcrumbs swizzling complete** — the trail now reads Collection › Section › Content.
 
@@ -614,6 +652,11 @@ export default function DocBreadcrumbs() {
 ## 📐 Step 3 — Apply Responsive Sidebar Styling
 
 Add responsive sidebar width rules to `src/css/custom.css` so the layout adapts cleanly from mobile to ultra-wide monitors.
+
+<Accordion type="single" collapsible>
+  <AccordionItem value="full-code">
+    <AccordionTrigger>Show Full Code</AccordionTrigger>
+    <AccordionContent>
 
 ```css
 /* ===============================
@@ -662,6 +705,9 @@ Add responsive sidebar width rules to `src/css/custom.css` so the layout adapts 
   }
 }
 ```
+   </AccordionContent>
+  </AccordionItem>
+</Accordion>
 
 :::note[Why this matters]
 Without these breakpoints, the sidebar stays a fixed width regardless of screen size — cramped on ultra-wide monitors, too wide on tablets. This scales it proportionally.
@@ -700,6 +746,11 @@ Make the navbar logo automatically swap between light/dark variants based on the
 ## 🧵 Putting It All Together
 
 ### Full `src/css/custom.css`
+
+<Accordion type="single" collapsible>
+  <AccordionItem value="full-code">
+    <AccordionTrigger>Show Full Code</AccordionTrigger>
+    <AccordionContent>
 
 ```css
 :root {
@@ -801,6 +852,9 @@ Make the navbar logo automatically swap between light/dark variants based on the
   content: url('/img/logo-dark.svg');
 }
 ```
+   </AccordionContent>
+  </AccordionItem>
+</Accordion>
 
 ### Full `docusaurus.config.js`
 

@@ -1,6 +1,6 @@
 ---
-title: "Creating a Health-Check Endpoint in Strapi"
-sidebar_label: "Creating a Health-Check Endpoint in Strapi"
+title: "Keep Strapi Awake on Render Free"
+sidebar_label: "Keep Strapi Awake on Render Free"
 root_name: "KnowledgeBase"
 child_name: "Strapi Production Pipeline"
 ---
@@ -8,24 +8,22 @@ child_name: "Strapi Production Pipeline"
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# 🌙 Keeping a Strapi API on Render Free from Going Idle
+# 🌙 Keeping a Strapi API Available on Render Free
 
-:::danger[The Problem]
-Render's **Free** web services spin down after **15 minutes** of no inbound HTTP traffic. Once idle, your Strapi API stops responding until the next request wakes it up — which can take 30–60 seconds and breaks your app's UX.
-:::
+Render Free web services can **spin down after periods of inactivity**. When the service wakes again, the first request may experience a **cold-start delay**.
 
-**The fix:** set up an external monitor that pings your API every few minutes so it never falls asleep. Here's the full flow:
+One approach is to use an external uptime-monitoring service that periodically requests a lightweight health-check endpoint.
 
-```mermaid
-flowchart TD
-    A[UptimeRobot Free] -->|"HEAD /api/ping (every 5 min)"| B[Render]
-    B --> C[Strapi]
-    C --> D["200 OK"]
-```
+## 🎯 Objective
 
-:::tip[Why HEAD and not GET?]
-UptimeRobot's **free tier only supports HTTP monitors that send `HEAD` requests**, not `GET`. So our Strapi endpoint needs to handle `HEAD` gracefully — while still returning real JSON to normal users making `GET` requests.
-:::
+By the end of this guide, you will be able to:
+
+* Create a lightweight `/api/ping` endpoint in Strapi.
+* Test the endpoint locally.
+* Deploy the endpoint to Render.
+* Verify the production health check.
+* Configure an external monitoring service.
+
 
 ----
 

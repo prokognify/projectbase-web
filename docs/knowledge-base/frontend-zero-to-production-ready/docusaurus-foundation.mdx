@@ -1,0 +1,436 @@
+---
+title: "Docusaurus Foundation"
+sidebar_label: "Docusaurus Foundation"
+root_name: "KnowledgeBase"
+child_name: "Frontend: Zero to Production-Ready"
+---
+
+import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
+
+# ☄️ Docusaurus Foundation
+
+> Build and prepare the Docusaurus frontend foundation for a **Strapi-powered documentation system**.
+
+## 🎯 Objective
+
+This guide sets up a clean, customized **Docusaurus documentation frontend** and prepares it for integration with Strapi.
+
+By completing this guide, you will:
+
+* 🚀 **Scaffold Docusaurus** — Create the initial documentation website.
+* 🧹 **Clean the boilerplate** — Remove unnecessary starter content and establish a clean project structure.
+* 🎨 **Configure Tailwind CSS v4** — Integrate Tailwind CSS with Docusaurus for utility-first styling.
+* 🧩 **Configure shadcn/ui** — Enable reusable shadcn/ui components in React and MDX.
+
+ 🏁 Final Outcome
+> At the end of this guide, you will have a **clean, styled, component-ready Docusaurus frontend** that is prepared for the next stages of the documentation system.
+---
+
+## Step 1 — Scaffold the Project
+
+Open **PowerShell** and run the official Docusaurus CLI:
+
+```bash
+npx create-docusaurus@latest <website_name> classic
+```
+
+For example:
+
+```bash
+npx create-docusaurus@latest knowledgebase-web classic
+```
+
+When prompted, choose **JavaScript** as your language.
+
+```text title="Expected output"
+√ Which language do you want to use? » JavaScript
+[SUCCESS] Created knowledgebase-web.
+
+cd knowledgebase-web
+npm start
+```
+
+:::tip[Pro tip]
+Don't run `npm start` yet — there's clean-up and configuration to do first!
+:::
+
+---
+
+## Step 2 — Remove the Boilerplate 🧹
+
+Docusaurus ships with sample content you don't need. Delete the following:
+
+| Type | Path | Items |
+|---|---|---|
+| 📁 Directory | `blog/` | entire folder |
+| 📁 Directory | `src/components/` | `HomepageFeatures/` |
+| 🖼️ Images | `static/img/` | `docusaurus.png`, `docusaurus-social-card.jpg`, `undraw_docusaurus_mountain.svg`, `undraw_docusaurus_react.svg`, `undraw_docusaurus_tree.svg` |
+| 📄 File | `src/pages/` | `markdown-page.mdx` |
+
+:::info[Clean first, run later] 
+Remove the default Docusaurus content before starting the development server. This keeps your project clean and makes the next configuration steps easier to follow. 
+:::
+
+
+## Step 3 — Tailwind v4 Fresh Install
+
+> Docusaurus ships its own internal `postcss-loader` inside its webpack bundler. Because of this, we **do not** install `postcss-loader` separately — we only need to install the Tailwind/PostCSS plugins themselves and hand them to Docusaurus via a custom plugin's `configurePostCss` hook.
+
+---
+
+### Task 1 — Install dependencies
+
+```powershell
+npm install -D tailwindcss @tailwindcss/postcss postcss autoprefixer
+```
+
+**Why these four and nothing else:**
+
+| Package | Purpose |
+|---|---|
+| `tailwindcss` | Core Tailwind engine (v4) |
+| `@tailwindcss/postcss` | v4's PostCSS plugin (replaces the old `tailwindcss` PostCSS plugin from v3) |
+| `postcss` | Required peer for any PostCSS plugin pipeline |
+| `autoprefixer` | Adds vendor prefixes automatically |
+
+No `postcss-loader` — Docusaurus already has one internally.
+
+---
+
+### Task 2 — Register a Tailwind plugin in `docusaurus.config.js`
+
+Add a `plugins` array (alongside your existing `presets`, `themeConfig`, etc.) with a small inline plugin that feeds Docusaurus's internal PostCSS loader the right plugins:
+
+```js
+plugins: [
+  function tailwindPlugin(context, options) {
+    return {
+      name: 'tailwind-plugin',
+      configurePostCss(postcssOptions) {
+        postcssOptions.plugins = [
+          require('@tailwindcss/postcss'),
+          require('autoprefixer'),
+        ];
+        return postcssOptions;
+      },
+    };
+  },
+],
+```
+--- 
+
+### Task 3 — Update `src/css/custom.css`
+
+Add these lines at the **very top** of the file, above any existing custom CSS:
+
+```css
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
+@source "../../docs/**/*.{md,mdx}";
+
+/* your existing custom CSS stays below, unchanged */
+```
+
+Notes:
+- `@source` tells Tailwind v4's automatic content scanner to also scan your `.md`/`.mdx` docs files for class names (useful if you use Tailwind utility classes inside MDX).
+- Adjust the relative path in `@source` if `custom.css` doesn't live at `src/css/custom.css`.
+
+---
+### Task 4 — Set up the `@/*` import alias (for shadcn/ui later)
+
+#### 4a. Create/update `tsconfig.json`
+
+```json
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  }
+}
+```
+
+#### 4b. Register a second Docusaurus plugin for the matching webpack alias
+
+Add this **right after** `tailwindPlugin` in the same `plugins` array:
+
+```js
+function aliasPlugin(context, options) {
+  return {
+    name: 'alias-plugin',
+    configureWebpack() {
+      return {
+        resolve: {
+          alias: {
+            '@': require('path').resolve(__dirname, 'src'),
+          },
+        },
+      };
+    },
+  };
+},
+```
+
+> `tsconfig.json` only helps TypeScript/editor tooling resolve `@/*` — it does **not** affect the actual bundler. The `aliasPlugin` webpack alias is what makes `@/*` imports actually work at build/runtime. You need both.
+
+---
+
+### Task 5 — Full reference `docusaurus.config.js`
+
+<Accordion type="single" collapsible>
+  <AccordionItem value="full-code">
+    <AccordionTrigger>Show Full Code</AccordionTrigger>
+    <AccordionContent>
+
+```js
+import {themes as prismThemes} from 'prism-react-renderer';
+
+const config = {
+    // ------------------------------------------------------------
+    // Site
+    // ------------------------------------------------------------
+
+    title: 'KnowledgeBase',
+    tagline: 'Knowledge will be organized',
+    favicon: 'img/favicon.ico',
+
+    url: '[https://knowledgebase-web.vercel.app](https://knowledgebase-web.vercel.app)',
+    baseUrl: '/',
+
+    // Docusaurus v4 behavior
+    future: {
+        v4: true,
+    },
+
+    // ------------------------------------------------------------
+    // Internationalization
+    // ------------------------------------------------------------
+
+    i18n: {
+        defaultLocale: 'en',
+        locales: ['en'],
+    },
+
+    // ------------------------------------------------------------
+    // Tailwind + shadcn
+    // ------------------------------------------------------------
+
+    plugins: [
+        function tailwindPlugin(context, options) {
+            return {
+                name: 'tailwind-plugin',
+
+                configurePostCss(postcssOptions) {
+                    postcssOptions.plugins = [
+                        require('@tailwindcss/postcss'),
+                        require('autoprefixer'),
+                    ];
+
+                    return postcssOptions;
+                },
+            };
+        },
+
+        function aliasPlugin(context, options) {
+            return {
+                name: 'alias-plugin',
+
+                configureWebpack() {
+                    return {
+                        resolve: {
+                            alias: {
+                                '@': require('path').resolve(__dirname, 'src'),
+                            },
+                        },
+                    };
+                },
+            };
+        },
+    ],
+
+    // ------------------------------------------------------------
+    // Presets
+    // ------------------------------------------------------------
+
+    presets: [
+        [
+            'classic',
+            {
+                docs: {
+                    sidebarPath: './sidebars.js',
+                    editUrl: '[https://github.com/prokognify/knowledgebase-web](https://github.com/prokognify/knowledgebase-web)',
+                },
+
+                theme: {
+                    customCss: './src/css/custom.css',
+                },
+            },
+        ],
+    ],
+
+    // ------------------------------------------------------------
+    // Theme
+    // ------------------------------------------------------------
+
+    themeConfig: {
+        colorMode: {
+            respectPrefersColorScheme: true,
+        },
+
+        navbar: {
+            title: 'KnowledgeBase',
+
+            logo: {
+                alt: 'KnowledgeBase',
+                src: 'img/logo-light.svg',
+            },
+
+            items: [],
+        },
+
+        prism: {
+            theme: prismThemes.github,
+            darkTheme: prismThemes.dracula,
+        },
+    },
+};
+
+export default config;
+
+```
+   </AccordionContent>
+  </AccordionItem>
+</Accordion>
+
+
+### Task 6 — Verify the install
+
+1. Run the dev server:
+   ```powershell
+   npm run start
+   ```
+2. Add a quick sanity-check class to any component, e.g. `<div className="bg-red-500 text-white p-4">Tailwind works</div>`.
+3. Confirm the styling renders. If it doesn't:
+   - Double-check `custom.css` import order (Tailwind imports must be at the very top).
+   - Confirm `configurePostCss` is actually being picked up (restart the dev server after config changes — Docusaurus doesn't hot-reload `docusaurus.config.js`).
+   - Confirm `@source` path correctly points at your `.md`/`.mdx` content if utility classes used inside docs aren't being picked up.
+
+---
+## Step 4 — Adding shadcn/ui
+
+> **Prerequisite:** Tailwind CSS v4 and the `@/*` import alias must already be configured and working.
+
+Docusaurus is not a project type that `shadcn init` fully recognizes. Therefore, instead of running the standard initialization flow, we configure shadcn/ui **manually once**.
+
+After the initial setup, you can use the shadcn CLI to add individual components:
+
+```bash
+npx shadcn@latest add <component>
+```
+
+
+### Task 1 — Install the shadcn/ui runtime dependencies
+
+```powershell
+npm install @radix-ui/react-accordion lucide-react class-variance-authority clsx tailwind-merge tw-animate-css
+```
+
+**Why each package is needed:**
+
+| Package | Purpose |
+|---|---|
+| `@radix-ui/react-accordion` | Unstyled, accessible Accordion primitive — imported directly by `accordion.jsx` |
+| `lucide-react` | Icon set used by shadcn components (e.g. the chevron in Accordion) — also imported directly |
+| `class-variance-authority` | Powers shadcn's variant-based component styling (`cva`) |
+| `clsx` | Conditionally joins class names |
+| `tailwind-merge` | Resolves conflicting Tailwind classes when merging (used inside the `cn` utility) |
+| `tw-animate-css` | Animation utility classes shadcn components rely on for open/close transitions |
+
+> Any future shadcn component may pull in its own additional Radix package (e.g. `@radix-ui/react-dialog` for a Dialog). Install those the same way, on demand, per component.
+
+---
+
+### Task 2 — Create `components.json` at the project root
+
+Since `shadcn init` doesn't recognize Docusaurus as a supported framework, skip `init` entirely and create the config file yourself at the **project root**:
+
+```json
+{
+  "$schema": "https://ui.shadcn.com/schema.json",
+  "style": "new-york",
+  "tailwind": {
+    "config": "tailwind.config.js",
+    "css": "src/css/custom.css",
+    "baseColor": "neutral",
+    "cssVariables": true
+  },
+  "rsc": false,
+  "tsx": false,
+  "aliases": {
+    "components": "@/components",
+    "ui": "@/components/ui",
+    "lib": "@/lib",
+    "hooks": "@/hooks",
+    "utils": "@/lib/utils"
+  }
+}
+```
+
+Key settings explained:
+- `"tsx": false` — the project uses `.jsx`, not `.tsx`, so shadcn generates JS components.
+- `"rsc": false` — no React Server Components (Docusaurus doesn't use them).
+- `"css": "src/css/custom.css"` — points shadcn at the same stylesheet that already has the Tailwind v4 imports.
+- `"aliases"` — must match the `@/*` → `./src/*` alias already configured in `tsconfig.json` and the Docusaurus webpack plugin.
+
+---
+
+### Task 3 — Add the `cn` utility
+
+Create `src/lib/utils.js` (since `tsx: false`):
+
+```js
+import { clsx } from "clsx";
+import { twMerge } from "tailwind-merge";
+
+export function cn(...inputs) {
+  return twMerge(clsx(inputs));
+}
+```
+
+This is the merge helper every shadcn component imports as `@/lib/utils` to combine conditional classes safely.
+
+---
+
+### Task 4 — Add the Accordion component
+
+With `components.json` now in place, the CLI can add components correctly:
+
+```powershell
+npx shadcn@latest add accordion
+```
+
+> This writes the Accordion source into `src/components/ui/accordion.jsx` 
+
+---
+
+### Task 5 — Restart the dev server
+
+Docusaurus doesn't hot-reload config/alias changes:
+
+```powershell
+npm run start
+```
+
+---
+
+## Troubleshooting
+
+| Symptom | Likely cause |
+|---|---|
+| Tailwind classes have no effect | `custom.css` import order wrong, or dev server not restarted after config changes |
+| Utility classes inside `.md`/`.mdx` docs aren't picked up | `@source` path in `custom.css` doesn't match your actual docs folder location |
+| `Module not found: @radix-ui/react-accordion` | Runtime dependency install was skipped, or `node_modules` is stale — reinstall and restart |
+| `shadcn add` prompts to run `init` first | `components.json` is missing or malformed |
+| shadcn component styles look unstyled/broken | `components.json` → `tailwind.css` path doesn't match the actual `custom.css` location |
+| `@/lib/utils` import fails | `cn` utility file missing, or `@/*` alias not wired into both `tsconfig.json` and the Docusaurus `aliasPlugin` webpack config |
